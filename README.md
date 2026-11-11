@@ -56,12 +56,10 @@ pip install -r requirements-langextract.txt
 ```
 
 ```bash
-export LANGEXTRACT_API_KEY=your-key
+python3 tools/extract_langextract.py --ask-key
 ```
 
-```bash
-python3 tools/extract_langextract.py
-```
+`--ask-key` prompts for the key in the terminal without showing it, uses it for that run and saves it nowhere. It needs an interactive terminal. Otherwise set `LANGEXTRACT_API_KEY` in the environment first and leave the flag off.
 
 ```bash
 python3 tools/evaluate.py extractions/candidates.langextract.json

@@ -6,7 +6,8 @@ model that answers from the hand marks. It has NOT been run against a real
 model: no model key was available. A dry run tests the plumbing, not a model.
 
 Needs Python 3.10+, `pip install -r requirements-langextract.txt`, and a key:
-    export LANGEXTRACT_API_KEY=...      (Gemini, the default)
+    --ask-key                           prompts for it in the terminal, hidden, for this run only
+or  export LANGEXTRACT_API_KEY=...      (Gemini, the default)
 or  export OPENAI_API_KEY=...           with --model gpt-4o and langextract[openai]
 or a local Ollama model                 with --model gemma2:2b --model-url http://localhost:11434
 
@@ -35,8 +36,10 @@ The first scores the candidates and lists disagreements for a person to
 decide. The second re-parses every date and number and rebuilds the viewer.
 """
 import argparse
+import getpass
 import hashlib
 import json
+import os
 import pathlib
 import sys
 import textwrap
@@ -202,6 +205,9 @@ def main():
     parser.add_argument("--dry-run", action="store_true",
                         help="use a stand-in model that answers from the hand marks; tests the plumbing only")
     parser.add_argument("--output", default=str(OUTPUT), help="where to write the candidates")
+    parser.add_argument("--ask-key", action="store_true",
+                        help="prompt for the model key in the terminal, without showing it; it is used for "
+                             "this run only and is not saved anywhere")
     args = parser.parse_args()
 
     if sys.version_info < (3, 10):
@@ -217,6 +223,13 @@ def main():
         lx_version = version("langextract")
     except Exception:
         lx_version = "version unknown"
+
+    if args.ask_key:
+        if not sys.stdin.isatty():
+            print("--ask-key needs an interactive terminal; set the key as an environment variable instead.")
+            return 2
+        variable = "OPENAI_API_KEY" if args.model.startswith(("gpt-", "o1", "o3", "o4")) else "LANGEXTRACT_API_KEY"
+        os.environ[variable] = getpass.getpass("Model key for %s (input is hidden): " % args.model).strip()
 
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
     example_ids = tuple(config["example_provisions"])
