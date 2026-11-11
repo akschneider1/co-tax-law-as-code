@@ -48,7 +48,10 @@ def ground(sections, extractions, errors):
         provision["derive"] = group.get("derive")
         taken = []
         for span in group["spans"]:
-            start = provision["text"].find(span["text"])
+            # A span may say where it starts; otherwise its first occurrence is taken.
+            start = span.get("start", -1)
+            if provision["text"][start:start + len(span["text"])] != span["text"]:
+                start = provision["text"].find(span["text"])
             if start < 0:
                 errors.append("span not found verbatim in %s: %r" % (group["provision"], span["text"]))
                 continue

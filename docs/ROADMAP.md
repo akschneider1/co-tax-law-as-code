@@ -6,20 +6,23 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 
 | Piece | State |
 |---|---|
-| Text, parameters, engine, 16 tests, validator | Working. `tools/validate.py` and `tools/run_tests.py` pass. |
-| Grounding build (`tools/build_web.py`) | Working. 33 hand-marked spans located verbatim and re-parsed. |
-| Viewer (`web/index.html`, USWDS 3.14.0) | Working. Checked in a browser: both parameters, year selection, no console errors. |
-| LangExtract script (`tools/extract_langextract.py`) | Written, never run. Only its non-model parts were tested, with a stand-in for the library. |
-| `tools/textlib.py` (cross-references, context, parsers) | Written and sanity-checked. Not yet used by any other script. |
-| Everything under "Planned improvements" below | Not started, except `textlib.py`. |
-| "Proposed changes from the follow-up research" below | Proposed. Not started. |
+| Text, parameters, engine, validator | Working. `tools/validate.py` passes. |
+| Tests | Working. 23 cases, and 4,024 checks against the Department of Revenue's printed tax tables. |
+| Stored sources (`sources/`, `tools/snapshot_source.py`) | Working. Nine documents; every agency quote is checked against one. |
+| Amendment 87 text (`text/co-2026-amendment-87.xml`) | Proposed (1.8) ingested and marked. The rest of the measure is not. |
+| Grounding build (`tools/build_web.py`) | Working. 51 hand-marked spans located verbatim and re-parsed. Imports `textlib.py`. |
+| Viewer (`web/index.html`, USWDS 3.14.0) | Working. Checked in a browser: both parameters, every year, no script errors. |
+| LangExtract script (`tools/extract_langextract.py`) | Runs end to end against LangExtract 1.7.2 with a stand-in model. Never run against a real model. |
+| Scoring (`tools/evaluate.py`) | Working. Tried on altered copies of the hand marks. No real candidates yet. |
+| Current official statute text | Not ingested. The 2026 files are on `olls.info`, which was not allowed. |
 
 ### Known weaknesses
 
 - **The statute text is out of date.** It comes from an unofficial mirror (public.law). Five values it gives differ from what the Department of Revenue publishes; see the README table. The amending provisions are not ingested.
-- **Tests are hand-derived** from the parameter files, except one taken from the 2023 104 Book.
+- **Most test cases are hand-derived** from the parameter files. The official checks cover the form-table rule only.
 - **Span marking is unreviewed.** A language model marked the spans; no lawyer has checked them.
-- **`build_web.py` duplicates code** that now also lives in `textlib.py` (section loading and the two parsers). The first refactor is to make it import from `textlib.py`.
+- **The LangExtract path has never met a real model.** Context, exact-match filtering, caching and scoring are built and exercised with a stand-in. Whether context helps on this text is unmeasured.
+- **The tax-table method is inferred.** The Department does not state it. It reproduces every printed row that could be read.
 
 ### Environment notes
 
@@ -98,7 +101,7 @@ Done in the second pass, because each rests on a source that was read:
 - One test now comes from the 2023 104 Book.
 - The README states the tax-table, rounding and under-25 limits.
 
-Everything lettered below is a proposal. None is started, and the numbered items above are unchanged until they are accepted.
+Everything lettered below was a proposal. Most have since been implemented; "Status of these proposals" below says which.
 
 ### Corrections to the roadmap as written
 
@@ -157,12 +160,44 @@ X. **Item 13: one content store, two readers.** Hsu's FR 2052a site serves the s
 - **A typed-operation calculus for amendments.** Hsu's own held-out test found it no more accurate than a plain model; its value was auditability. With two sections ingested, the validator already gives us that.
 - **Model judges for our output.** Our checks are mechanical (verbatim, re-parse, source agreement). A judge would add a less reliable check on top of a more reliable one.
 
-### Suggested order
+### Status of these proposals
 
-1. A to D, then the first real LangExtract run with and without context (items 1 and 3, with E and F).
-2. The decision in P, then Q's ingestion of the measure text.
-3. J, K and M, which strengthen what is already recorded.
-4. Everything else.
+Implemented on 11 November 2026, after the proposals were accepted:
+
+| Item | State |
+|---|---|
+| A, B, C, D | Done. The script sets the chunk size, uses the library's character offsets, accepts exact matches only, and passes context. |
+| D2 | Done for lead-ins and provisos. Definitions are looked up, but the ingested text defines no quoted terms, so that path is untested on real text. |
+| D3 | Partly. Each provision's word count is recorded; the longest is 145 words and 28 of the 33 are under 100, the size below which STARA found context lacking. Nothing is merged or split. |
+| E, F | Done in `tools/evaluate.py`: disagreements go to `extractions/adjudication.json`, and example provisions are left out. |
+| G | Done as a report: give `evaluate.py` several runs. No real runs exist yet. |
+| H | Not done. Provisions are not tagged by the structural task they need. |
+| I | Done in the prompt. |
+| J | Done differently. Verification is computed by the validator, not recorded by hand: a source is verified when its quote is found in a stored copy. |
+| K | Done. `sources/` holds nine documents. |
+| L | Not done. No re-verification schedule is set. |
+| M | Partly. A provision can record that a later instrument ends its effect (`superseded-from`). The four-way staleness class is not added. |
+| N | Done. See "What each claim rests on" in the README. |
+| O, Q | Done, except the principal-residence rule, which the engine refuses instead of modelling, and the parts of the measure outside (1.8). |
+| P, R | Open. They need HB24-1134. |
+| S | Not done as a script. The manual comparison stands. |
+| S2, S3 | Done. Rule `co.income_tax.form_table`, and `tools/make_table_tests.py`. |
+| T | Done, except the call budget. |
+| U | Not done. There is no inventory yet (item 9). |
+| V | Partly. `evaluate.py` records decisions on disagreements. Per-provision review status and viewer buttons are not built. |
+| W | Done, and taken further: the caller states the basis of the federal amount. |
+| X | Not done. |
+
+Numbered items this also closed: 1 (context is sent; the with and without comparison awaits a real model), 3, 4, 7, 8, 11, and "add effective-date ranges" in part.
+
+Blocked: item 6 and item 10, ingesting the current official text. The host that serves it was not allowed.
+
+### Suggested order from here
+
+1. A real LangExtract run, with and without context, then adjudication of the disagreements.
+2. Item 6, if `olls.info` is allowed.
+3. HB24-1134, then the decision in P.
+4. The inventory (item 9 with U) and the review workflow (item 12 with V).
 
 ## Open decisions
 
