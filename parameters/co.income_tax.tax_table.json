@@ -1,0 +1,51 @@
+{
+  "id": "co.income_tax.tax_table",
+  "description": "How the Department of Revenue's printed tax table arrives at the tax for Colorado taxable income of $50,000 or less: income falls in a band, and the tax is the year's rate applied to the middle of the band, rounded to whole dollars. The band layout and the midpoint method are not stated by the Department. They were inferred from the tables and are checked against every table row in tests/tax_table_cases.json.",
+  "value_type": "tax_table",
+  "keyed_by": "first day of the income tax year (calendar-year filers assumed)",
+  "values": [
+    {
+      "effective_from": "2022-01-01",
+      "effective_to": "2022-12-31",
+      "value": {"at_or_below": "50000", "band_edges_below_100": ["0", "10", "30", "50", "75", "100"], "band_width": "100", "tax_at": "band_midpoint"},
+      "status": "agency_published",
+      "sources": [
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2022 Colorado Individual Income Tax Filing Guide (104 Book)", "url": "https://tax.colorado.gov/sites/tax/files/documents/DR_104_Book_2022.pdf", "snapshot": "dor-104-book-2022", "locator": "Colorado Income Tax Table", "quote": "2022 Colorado Income Tax Table with tax rate of 4.4%", "retrieved": "2026-11-11"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Individual Income Tax Guide", "url": "https://tax.colorado.gov/individual-income-tax-guide", "snapshot": "dor-individual-income-tax-guide", "quote": "For individuals with Colorado taxable incomes of less than $50,000, the Department publishes tax tables which approximate the individual’s Colorado tax determined at the applicable prescribed rate.", "retrieved": "2026-11-11"}
+      ]
+    },
+    {
+      "effective_from": "2023-01-01",
+      "effective_to": "2023-12-31",
+      "value": {"at_or_below": "50000", "band_edges_below_100": ["0", "10", "30", "50", "75", "100"], "band_width": "100", "tax_at": "band_midpoint"},
+      "status": "agency_published",
+      "sources": [
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2023 Colorado Individual Income Tax Filing Guide (104 Book)", "url": "https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf", "snapshot": "dor-104-book-2023", "locator": "Colorado Income Tax Table", "quote": "2023 Colorado Income Tax Table with tax rate of 4.4%", "retrieved": "2026-11-11"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Individual Income Tax Guide", "url": "https://tax.colorado.gov/individual-income-tax-guide", "snapshot": "dor-individual-income-tax-guide", "quote": "For individuals with Colorado taxable incomes of less than $50,000, the Department publishes tax tables which approximate the individual’s Colorado tax determined at the applicable prescribed rate.", "retrieved": "2026-11-11"}
+      ]
+    },
+    {
+      "effective_from": "2024-01-01",
+      "effective_to": "2024-12-31",
+      "value": {"at_or_below": "50000", "band_edges_below_100": ["0", "10", "30", "50", "75", "100"], "band_width": "100", "tax_at": "band_midpoint"},
+      "status": "agency_published",
+      "sources": [
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2024 Colorado Individual Income Tax Filing Guide (104 Book)", "url": "https://tax.colorado.gov/sites/tax/files/documents/DR0104_book_2024.pdf", "snapshot": "dor-104-book-2024", "locator": "Colorado Income Tax Table", "quote": "2024 Colorado Income Tax Table with tax rate of 4.25%", "retrieved": "2026-11-11"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Individual Income Tax Guide", "url": "https://tax.colorado.gov/individual-income-tax-guide", "snapshot": "dor-individual-income-tax-guide", "quote": "For individuals with Colorado taxable incomes of less than $50,000, the Department publishes tax tables which approximate the individual’s Colorado tax determined at the applicable prescribed rate.", "retrieved": "2026-11-11"}
+      ]
+    },
+    {
+      "effective_from": "2025-01-01",
+      "effective_to": "2025-12-31",
+      "value": {"at_or_below": "50000", "band_edges_below_100": ["0", "10", "30", "50", "75", "100"], "band_width": "100", "tax_at": "band_midpoint"},
+      "status": "agency_published",
+      "sources": [
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2025 Colorado Individual Income Tax Filing Guide (104 Book)", "url": "https://tax.colorado.gov/sites/tax/files/documents/Book104_2025.pdf", "snapshot": "dor-104-book-2025", "locator": "Colorado Income Tax Table", "quote": "2025 Colorado Income Tax Table with tax rate of 4.4%", "retrieved": "2026-11-11"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Individual Income Tax Guide", "url": "https://tax.colorado.gov/individual-income-tax-guide", "snapshot": "dor-individual-income-tax-guide", "quote": "For individuals with Colorado taxable incomes of less than $50,000, the Department publishes tax tables which approximate the individual’s Colorado tax determined at the applicable prescribed rate.", "retrieved": "2026-11-11"}
+      ]
+    }
+  ],
+  "gaps": [
+    "No table is recorded for tax years from 2026: the 104 Books for those years were not published or not read. The engine reports no form-table amount for them."
+  ]
+}

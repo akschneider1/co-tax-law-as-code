@@ -36,7 +36,11 @@ class InvalidFacts(EngineError):
 
 
 def money(value):
-    """Round to whole dollars, half up. Assumption: mirrors whole-dollar return entries."""
+    """Round to whole dollars, half up.
+
+    The 104 Book says to round dollar amounts to the nearest whole dollar. Its
+    treatment of an exact half dollar was not checked; half up is assumed.
+    """
     return Decimal(value).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
 
 
@@ -78,11 +82,17 @@ RULES = {}
 
 
 def rule(rule_id, cites, params=()):
-    """Register a rule with the statute provisions and parameters it relies on."""
+    """Register a rule with the provisions and parameters it relies on.
+
+    A cite is a provision id, or (id, first_year, last_year) where the rule
+    relies on that provision only for some tax years; either year may be None.
+    """
 
     def decorate(func):
         func.rule_id = rule_id
-        func.cites = tuple(cites)
+        ranges = [(c, None, None) if isinstance(c, str) else tuple(c) for c in cites]
+        func.cite_ranges = tuple(ranges)
+        func.cites = tuple(c[0] for c in ranges)
         func.params = tuple(params)
         RULES[rule_id] = func
         return func
@@ -114,13 +124,21 @@ class Context:
         if message not in self.warnings:
             self.warnings.append(message)
 
-    def record(self, func, value, detail):
+    def cites_for(self, func):
+        """The provisions a rule relies on for this calculation's tax year."""
+        year = self.facts.get("tax_year")
+        if not isinstance(year, int):
+            return list(func.cites)
+        return [cite for cite, first, last in func.cite_ranges
+                if (first is None or first <= year) and (last is None or year <= last)]
+
+    def record(self, func, value, detail, cites=None):
         self.trace.append(
             {
                 "rule": func.rule_id,
-                "value": str(value),
+                "value": None if value is None else str(value),
                 "detail": detail,
-                "cites": list(func.cites),
+                "cites": list(cites) if cites is not None else self.cites_for(func),
                 "parameters": list(func.params),
             }
         )

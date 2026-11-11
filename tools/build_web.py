@@ -159,6 +159,8 @@ def canonical(value):
 def build_parameters(parameters, by_id, errors):
     out = []
     for pid, data in sorted(parameters.by_id.items()):
+        if data["value_type"] == "tax_table":
+            continue  # a method, not a value stated in statute text; not shown in the viewer
         # Step 4: every statute claim in the parameter file must be grounded.
         for entry in data["values"]:
             for source in entry["sources"]:
