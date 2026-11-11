@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured-text layer, prototype. USLM-inspired hierarchy (section > provision > provision),
+  NOT schema-valid USLM. Every provision has a stable id that rules and parameters cite.
+  Text in <content> is verbatim from the source named in <meta>; nothing is paraphrased.
+-->
+<section id="/us/co/crs/39-22-104">
+  <meta>
+    <citation>C.R.S. 39-22-104</citation>
+    <heading>Income tax imposed on individuals, estates, and trusts - single rate - report - legislative declaration - definitions - repeal</heading>
+    <source publisher="public.law (unofficial mirror)"
+            url="https://colorado.public.law/statutes/crs_39-22-104"
+            upstream="https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-39.pdf"
+            upstream-accessed-by-mirror="2025-05-26"
+            retrieved="2026-11-11"/>
+    <authority>unofficial</authority>
+    <completeness>excerpt</completeness>
+    <note>Only the rate provisions for tax years from 2020 and subsection (2) are ingested. Subsections (1), (1.5), (1.7)(a), (3), (4) and (5) (historic rates; additions to and subtractions from federal taxable income) are not ingested. The snapshot predates at least one amendment that the Department of Revenue's published figures reflect; see parameters/ for the recorded conflicts.</note>
+  </meta>
+
+  <provision id="/us/co/crs/39-22-104/1.7" num="(1.7)" status="in-force">
+    <provision id="/us/co/crs/39-22-104/1.7/b" num="(b)" status="in-force">
+      <content>Except as otherwise provided in section 39-22-627, subject to subsection (2) of this section, with respect to taxable years commencing on or after January 1, 2020, but before January 1, 2022, a tax of four and fifty-five one-hundredths percent is imposed on the federal taxable income, as determined pursuant to section 63 of the internal revenue code, of every individual, estate, and trust.</content>
+    </provision>
+    <provision id="/us/co/crs/39-22-104/1.7/c" num="(c)" status="in-force">
+      <content>Except as otherwise provided in section 39-22-627, subject to subsection (2) of this section, with respect to taxable years commencing on or after January 1, 2022, a tax of four and forty one-hundredths percent is imposed on the federal taxable income, as determined pursuant to section 63 of the internal revenue code, of every individual, estate, and trust.</content>
+    </provision>
+  </provision>
+
+  <provision id="/us/co/crs/39-22-104/2" num="(2)" status="in-force">
+    <content>Prior to the application of the rate of tax prescribed in subsection (1), (1.5), or (1.7) of this section, the federal taxable income shall be modified as provided in subsections (3) and (4) of this section.</content>
+  </provision>
+</section>

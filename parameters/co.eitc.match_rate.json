@@ -1,0 +1,85 @@
+{
+  "id": "co.eitc.match_rate",
+  "description": "Colorado earned income tax credit as a fraction of the federal earned income credit.",
+  "value_type": "rate",
+  "keyed_by": "first day of the income tax year (calendar-year filers assumed)",
+  "values": [
+    {
+      "effective_from": "2022-01-01",
+      "effective_to": "2022-12-31",
+      "value": "0.20",
+      "status": "statute_snapshot",
+      "sources": [
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/b", "states": "0.20"}
+      ],
+      "caveat": "Statute snapshot only. The Department of Revenue page read on 2026-11-11 does not state a 2022 percentage."
+    },
+    {
+      "effective_from": "2023-01-01",
+      "effective_to": "2023-12-31",
+      "value": "0.25",
+      "status": "statute_snapshot",
+      "sources": [
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/c/I", "states": "0.25"}
+      ],
+      "caveat": "Statute snapshot only. The Department of Revenue page read on 2026-11-11 does not state a 2023 percentage."
+    },
+    {
+      "effective_from": "2024-01-01",
+      "effective_to": "2024-12-31",
+      "value": "0.50",
+      "status": "agency_published",
+      "sources": [
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/d/I", "states": "0.38"},
+        {
+          "kind": "agency",
+          "publisher": "Colorado Department of Revenue",
+          "url": "https://tax.colorado.gov/CTC-EITC",
+          "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.",
+          "retrieved": "2026-11-11",
+          "states": "0.50"
+        }
+      ],
+      "conflict_note": "The ingested statute snapshot says 38% for 2024; the Department of Revenue publishes 50%. The agency value is used. The snapshot's heading mentions a 'trigger' that its text does not contain, so it predates or omits the amendment that set 50%. That amendment has not been ingested."
+    },
+    {
+      "effective_from": "2025-01-01",
+      "effective_to": "2025-12-31",
+      "value": "0.50",
+      "status": "agency_published",
+      "sources": [
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/c/I", "states": "0.25"},
+        {
+          "kind": "agency",
+          "publisher": "Colorado Department of Revenue",
+          "url": "https://tax.colorado.gov/CTC-EITC",
+          "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.",
+          "retrieved": "2026-11-11",
+          "states": "0.50"
+        }
+      ],
+      "conflict_note": "The ingested statute snapshot says 25% for 2025; the Department of Revenue publishes 50%. The agency value is used. Same cause as the 2024 conflict."
+    },
+    {
+      "effective_from": "2026-01-01",
+      "effective_to": "2026-12-31",
+      "value": "0.25",
+      "status": "agency_published",
+      "sources": [
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/b", "states": "0.20"},
+        {
+          "kind": "agency",
+          "publisher": "Colorado Department of Revenue",
+          "url": "https://tax.colorado.gov/CTC-EITC",
+          "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.",
+          "retrieved": "2026-11-11",
+          "states": "0.25"
+        }
+      ],
+      "conflict_note": "The ingested statute snapshot says 20% for 2026 and later; the Department of Revenue publishes 25% for 2026. The agency value is used. Same cause as the 2024 conflict."
+    }
+  ],
+  "gaps": [
+    "No value is recorded for tax years from 2027. The Department of Revenue page speaks only to 2026, and the statute snapshot is known to be out of date, so the engine refuses to compute the credit for 2027 onward."
+  ]
+}

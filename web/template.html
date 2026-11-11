@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colorado tax law, from text to parameter</title>
+<script src="assets/uswds/js/uswds-init.min.js"></script>
+<link rel="stylesheet" href="assets/uswds/css/uswds.min.css">
+<style>
+/* Built with the U.S. Web Design System (USWDS 3). Only what USWDS has no
+   component for is styled here: highlighted statute spans and the provision list. */
+.sp { border-radius: 2px; padding: 1px 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; color: inherit; }
+.sp-period { background: #d9e8f6; color: #1a4480; }
+.sp-value { background: #fee685; color: #5c410a; }
+.sp-base { background: #dbebde; color: #19311e; }
+.sp-who { background: #ede3ff; color: #54278f; }
+.sp-exception { background: #f8dfe2; color: #8b0a03; }
+.sp-effect { background: #ccecf2; color: #0e4f5c; }
+.legend .sp { font-size: .82rem; margin-right: 4px; }
+.prov { padding: 6px 10px; border-left: 4px solid transparent; margin-left: calc(var(--depth) * 16px); line-height: 1.6; }
+.prov.clickable { cursor: pointer; }
+.prov.clickable:hover { border-left-color: #a9aeb1; }
+.prov .label { font-weight: 700; color: #565c65; margin-right: 6px; }
+.prov.repealed { color: #71767a; font-style: italic; }
+.has-focus .prov:not(.focus) { opacity: .5; }
+.prov.focus { border-left-color: #005ea2; background: #f0f0f0; }
+.prov.focus .sp.hot { outline: 2px solid #005ea2; outline-offset: 1px; font-weight: 700; }
+.derived { display: inline-block; margin-left: 4px; padding: 0 8px; border-radius: 99rem; background: #005ea2; color: #fff; font-size: .82rem; font-weight: 700; white-space: nowrap; }
+.pane-scroll { border: 1px solid #dfe1e2; border-radius: 4px; padding: 16px; background: #fff; }
+@media (min-width: 64em) { .pane-scroll { max-height: calc(100vh - 32px); overflow: auto; position: sticky; top: 16px; } }
+tr.selected td, tr.selected th { background: #e7f6f8; }
+.usa-table .usa-tag { white-space: nowrap; }
+.spans { list-style: none; padding: 0; margin: 8px 0 0; }
+.spans li { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: start; margin-bottom: 6px; max-width: none; }
+.spans li.other { opacity: .5; }
+.spans .sp { text-align: center; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; }
+.arrow { color: #005ea2; font-weight: 700; white-space: nowrap; }
+.big { font-size: 1.6rem; font-weight: 700; margin-right: 8px; }
+.usa-process-list__item { max-width: none; }
+.usa-process-list__item p, .usa-alert__text { max-width: none; }
+</style>
+</head>
+<body>
+<a class="usa-skipnav" href="#main-content">Skip to main content</a>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container maxw-widescreen">
+    <div class="usa-navbar">
+      <div class="usa-logo"><em class="usa-logo__text">Colorado tax law as code</em></div>
+    </div>
+  </div>
+</header>
+
+<main id="main-content">
+  <div class="grid-container-widescreen padding-y-3">
+    <div class="usa-alert usa-alert--warning usa-alert--slim">
+      <div class="usa-alert__body">
+        <p class="usa-alert__text"><strong>Unofficial prototype.</strong> This is not a government website, not tax advice and not a statement of Colorado law.</p>
+      </div>
+    </div>
+    <h1 class="font-heading-xl margin-top-3 margin-bottom-1">From statute text to parameter</h1>
+    <p class="usa-intro margin-top-0 maxw-tablet-lg">Every number the calculator uses is traced back to the exact words of the statute that state it. Choose a tax year to see how its value was built.</p>
+
+    <div class="grid-row grid-gap margin-top-3">
+      <section class="desktop:grid-col-7 margin-bottom-3" aria-labelledby="text-h">
+        <div class="pane-scroll" id="text-pane"></div>
+      </section>
+      <section class="desktop:grid-col-5" aria-labelledby="param-h">
+        <div class="pane-scroll" id="param-pane"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="grid-container-widescreen padding-y-3 border-top border-base-lighter">
+  <p class="font-body-3xs text-base-dark margin-0" id="foot"></p>
+</footer>
+
+<script>/*COTAX_DATA*/</script>
+<script>
+(function () {
+  var D = window.COTAX;
+  var STATUS = {
+    agency_published: ["Agency published", "bg-success-dark"],
+    statute_snapshot: ["Statute text only", "bg-primary"],
+    statutory_default: ["Statute default", "bg-warning text-ink"],
+    reported_passed_uncertified: ["Reported, uncertified", "bg-warning text-ink"],
+    not_recorded: ["Not recorded", "bg-base-dark"]
+  };
+  var state = { param: "co.eitc.match_rate", year: 2024, section: null };
+
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    for (var k in (attrs || {})) {
+      if (k === "class") el.className = attrs[k];
+      else if (k === "onclick") el.addEventListener("click", attrs[k]);
+      else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+    }
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function pct(v) { return (+(parseFloat(v) * 100).toFixed(2)) + "%"; }
+  function usedLabel(v) {
+    if (v == null) return "No value";
+    if (Array.isArray(v)) {
+      if (v.length === 1) return pct(v[0].rate);
+      return pct(v[0].rate) + " to " + pct(v[v.length - 1].rate) + ", " + v.length + " brackets";
+    }
+    return pct(v);
+  }
+  function sameAsStatute(y) {
+    if (!y.statute || y.used == null) return false;
+    if (Array.isArray(y.used)) return y.used.length === 1 && parseFloat(y.used[0].rate) === parseFloat(y.statute.value);
+    return parseFloat(y.used) === parseFloat(y.statute.value);
+  }
+  function period(n) {
+    var a = n.from ? n.from.slice(0, 4) : null, b = n.to ? n.to.slice(0, 4) : null;
+    if (a && b) return a === b ? "tax year " + a : "tax years " + a + " to " + b;
+    if (a) return "tax years " + a + " onward";
+    return "tax years through " + b;
+  }
+  function tag(status) {
+    return h("span", { class: "usa-tag " + STATUS[status][1] }, STATUS[status][0]);
+  }
+  function segmented(items, current, pick) {
+    var ul = h("ul", { class: "usa-button-group usa-button-group--segmented margin-bottom-2" });
+    items.forEach(function (it) {
+      ul.appendChild(h("li", { class: "usa-button-group__item" },
+        h("button", { type: "button", class: "usa-button" + (it.id === current ? "" : " usa-button--outline"),
+                      "aria-pressed": String(it.id === current), onclick: function () { pick(it.id); } }, it.label)));
+    });
+    return ul;
+  }
+  function warning(node) {
+    return h("div", { class: "usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon margin-y-2" },
+      h("div", { class: "usa-alert__body" }, h("p", { class: "usa-alert__text" }, node)));
+  }
+  function param() { return D.parameters.filter(function (p) { return p.id === state.param; })[0]; }
+  function yearRow() { return param().years.filter(function (y) { return y.year === state.year; })[0]; }
+  function findProvision(id) {
+    for (var i = 0; i < D.sections.length; i++)
+      for (var j = 0; j < D.sections[i].provisions.length; j++)
+        if (D.sections[i].provisions[j].id === id) return { section: D.sections[i], provision: D.sections[i].provisions[j] };
+    return null;
+  }
+  function syncSection() {
+    var y = yearRow();
+    if (y.statute) state.section = findProvision(y.statute.provision).section.id;
+    else if (!state.section) state.section = D.sections[0].id;
+  }
+
+  function renderText() {
+    var pane = document.getElementById("text-pane");
+    pane.textContent = "";
+    var y = yearRow(), focusId = y.statute ? y.statute.provision : null;
+    var section = D.sections.filter(function (s) { return s.id === state.section; })[0];
+
+    pane.appendChild(h("h2", { class: "font-heading-lg margin-top-0", id: "text-h" }, "Statute text"));
+    pane.appendChild(segmented(
+      D.sections.map(function (s) { return { id: s.id, label: s.citation }; }),
+      state.section, function (id) { state.section = id; renderText(); }));
+
+    pane.appendChild(h("h3", { class: "font-heading-md margin-bottom-05" }, section.citation));
+    pane.appendChild(h("p", { class: "text-base-dark font-body-xs margin-top-0" }, section.heading));
+    var note = h("span", null, h("strong", null, "Unofficial copy. "), "Read from ",
+      h("a", { class: "usa-link usa-link--external", href: section.source.url, target: "_blank", rel: "noopener" }, section.source.publisher),
+      " on " + section.source.retrieved + ". " + section.note);
+    pane.appendChild(warning(note));
+
+    var legend = h("p", { class: "legend margin-y-2" }, h("span", { class: "font-body-xs text-base-dark margin-right-1" }, "Marked spans:"));
+    Object.keys(D.classes).forEach(function (c) {
+      legend.appendChild(h("span", { class: "sp sp-" + c, title: D.classes[c] }, c));
+    });
+    pane.appendChild(legend);
+
+    var list = h("div", { class: focusId && findProvision(focusId).section.id === section.id ? "has-focus" : "" });
+    section.provisions.forEach(function (p) {
+      var isFocus = p.id === focusId;
+      var cls = "prov" + (isFocus ? " focus" : "") + (p.status === "repealed" ? " repealed" : "") + (p.parameter ? " clickable" : "");
+      var row = h("div", { class: cls, style: "--depth:" + p.depth, id: "prov-" + p.id });
+      row.appendChild(h("span", { class: "label" }, p.label));
+      if (p.status === "repealed") row.appendChild(document.createTextNode("Repealed."));
+      else if (p.text) {
+        var pos = 0;
+        p.spans.forEach(function (s, i) {
+          if (s.start > pos) row.appendChild(document.createTextNode(p.text.slice(pos, s.start)));
+          var hot = isFocus && (i === y.statute.period_span || i === y.statute.value_span);
+          var tip = D.classes[s.class];
+          if (s.class === "period") tip += ": " + period(s.normalized);
+          if (s.class === "value") tip += ": " + pct(s.normalized);
+          row.appendChild(h("mark", { class: "sp sp-" + s.class + (hot ? " hot" : ""), title: tip }, p.text.slice(s.start, s.end)));
+          if (hot) row.appendChild(h("span", { class: "derived" }, s.class === "period" ? period(s.normalized) : pct(s.normalized)));
+          pos = s.end;
+        });
+        if (pos < p.text.length) row.appendChild(document.createTextNode(p.text.slice(pos)));
+      }
+      if (p.parameter) row.addEventListener("click", function () {
+        var target = D.parameters.filter(function (q) { return q.id === p.parameter; })[0];
+        var hit = target.years.filter(function (yy) { return yy.statute && yy.statute.provision === p.id; })[0];
+        if (!hit) return;
+        state.param = p.parameter; state.year = hit.year; render(false);
+      });
+      list.appendChild(row);
+    });
+    pane.appendChild(list);
+  }
+
+  function renderParams() {
+    var pane = document.getElementById("param-pane");
+    pane.textContent = "";
+    var p = param(), y = yearRow();
+
+    pane.appendChild(h("h2", { class: "font-heading-lg margin-top-0", id: "param-h" }, "Parameters"));
+    pane.appendChild(segmented(
+      D.parameters.map(function (q) { return { id: q.id, label: q.id.indexOf("eitc") >= 0 ? "Earned income credit" : "Income tax rate" }; }),
+      state.param, function (id) { state.param = id; render(true); }));
+    pane.appendChild(h("p", { class: "font-body-xs margin-top-0" }, h("code", null, p.id), h("br"), p.description));
+
+    var body = h("tbody");
+    p.years.forEach(function (r) {
+      var differs = r.statute && !sameAsStatute(r);
+      body.appendChild(h("tr", { class: r.year === state.year ? "selected" : "" },
+        h("th", { scope: "row" }, h("button", { type: "button", class: "usa-button usa-button--unstyled",
+          "aria-pressed": String(r.year === state.year), onclick: function () { state.year = r.year; render(true); } }, String(r.year))),
+        h("td", null, r.statute ? pct(r.statute.value) : "None"),
+        h("td", { class: differs ? "text-bold" : "" }, usedLabel(r.used) + (differs && r.used != null ? " (differs)" : "")),
+        h("td", null, tag(r.status))));
+    });
+    pane.appendChild(h("table", { class: "usa-table usa-table--borderless usa-table--compact width-full margin-top-1" },
+      h("caption", { class: "usa-sr-only" }, "Value by tax year: what the statute text gives and what the engine uses"),
+      h("thead", null, h("tr", null,
+        h("th", { scope: "col" }, "Tax year"), h("th", { scope: "col" }, "Text says"),
+        h("th", { scope: "col" }, "Value used"), h("th", { scope: "col" }, "Basis"))),
+      body));
+
+    var steps = h("ol", { class: "usa-process-list margin-top-2" });
+    function step(title) {
+      var li = h("li", { class: "usa-process-list__item" }, h("h4", { class: "usa-process-list__heading font-heading-sm" }, title));
+      for (var i = 1; i < arguments.length; i++) if (arguments[i]) li.appendChild(arguments[i]);
+      steps.appendChild(li);
+    }
+
+    if (y.statute) {
+      var found = findProvision(y.statute.provision);
+      step("Statute text", h("p", { class: "margin-top-05" }, found.section.citation + y.statute.label + ", highlighted in the statute text."));
+      var spans = h("ul", { class: "spans" });
+      found.provision.spans.forEach(function (s, i) {
+        var other = s.class === "period" && i !== y.statute.period_span;
+        var line = h("div", null, "“" + found.provision.text.slice(s.start, s.end) + "”");
+        if (s.class === "period") line.appendChild(h("span", { class: "arrow" }, " → " + period(s.normalized) + (other ? " (not this year)" : "")));
+        if (s.class === "value") line.appendChild(h("span", { class: "arrow" }, " → " + pct(s.normalized)));
+        spans.appendChild(h("li", { class: other ? "other" : "" }, h("span", { class: "sp sp-" + s.class }, s.class), line));
+      });
+      step("Marked spans", h("p", { class: "margin-top-05 text-base-dark" }, "Dates and number words are re-parsed by code and checked against the text."), spans);
+      step("What the text alone gives", h("p", { class: "margin-top-05" }, h("span", { class: "big" }, pct(y.statute.value)), "for tax year " + y.year));
+    } else {
+      step("Statute text", h("p", { class: "margin-top-05" }, "No ingested provision covers tax year " + y.year + "."));
+    }
+
+    var others = h("div", { class: "margin-top-05" });
+    if (!y.other_sources.length) others.appendChild(h("p", { class: "text-base-dark" }, "None recorded for this year."));
+    y.other_sources.forEach(function (s) {
+      others.appendChild(h("p", { class: "margin-bottom-05" }, s.publisher + (s.states ? " states " + usedLabel(s.states) + ". " : ". "),
+        h("a", { class: "usa-link usa-link--external", href: s.url, target: "_blank", rel: "noopener" }, "Source")));
+      others.appendChild(h("blockquote", { class: "border-left-05 border-base-light padding-left-2 margin-x-0 margin-y-1 font-body-xs" }, s.quote || s.summary));
+    });
+    step("Other sources", others);
+
+    var used = h("div", { class: "margin-top-05" }, h("span", { class: "big" }, usedLabel(y.used)), tag(y.status));
+    if (Array.isArray(y.used) && y.used.length > 1) {
+      var ul = h("ul", { class: "spans" });
+      y.used.forEach(function (b, i) {
+        var top = y.used[i + 1] ? ", up to $" + Number(y.used[i + 1].over).toLocaleString("en-US") : "";
+        ul.appendChild(h("li", null, h("span", { class: "sp sp-value" }, pct(b.rate)), h("div", null, "on income over $" + Number(b.over).toLocaleString("en-US") + top)));
+      });
+      used.appendChild(ul);
+    }
+    var why = y.conflict_note || y.caveat || (y.used == null ? p.gaps.join(" ") : null);
+    step("Value used", used, why ? warning(why) : null);
+
+    var rl = h("div", { class: "margin-top-05" });
+    D.rules.filter(function (r) { return r.parameters.indexOf(p.id) >= 0; }).forEach(function (r) {
+      rl.appendChild(h("p", null, h("code", null, r.id), h("br"), r.summary));
+    });
+    step("Rule that uses it", rl);
+
+    pane.appendChild(h("h3", { class: "font-heading-md margin-top-3 margin-bottom-0" }, "How the " + y.year + " value was built"));
+    pane.appendChild(steps);
+  }
+
+  function render(scroll) {
+    syncSection();
+    renderText();
+    renderParams();
+    var y = yearRow();
+    if (scroll && y.statute) {
+      // Scroll inside the statute pane only, so the page itself does not jump.
+      var el = document.getElementById("prov-" + y.statute.provision);
+      var pane = document.getElementById("text-pane");
+      if (el && pane.scrollHeight > pane.clientHeight) pane.scrollTop = Math.max(0, el.offsetTop - 140);
+    }
+  }
+
+  document.getElementById("foot").textContent =
+    "Built " + D.generated + " with the U.S. Web Design System " + D.uswds + ". Spans marked by: " + D.extracted_by;
+  render(true);
+})();
+</script>
+<script src="assets/uswds/js/uswds.min.js"></script>
+</body>
+</html>

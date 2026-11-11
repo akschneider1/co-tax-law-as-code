@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Structured-text layer, prototype. USLM-inspired hierarchy, NOT schema-valid USLM.
+  Text in <content> is verbatim from the source named in <meta>; nothing is paraphrased.
+-->
+<section id="/us/co/crs/39-22-123.5">
+  <meta>
+    <citation>C.R.S. 39-22-123.5</citation>
+    <heading>Earned income tax credit - not a refund of excess state revenues - trigger - legislative declaration - repeal</heading>
+    <source publisher="public.law (unofficial mirror)"
+            url="https://colorado.public.law/statutes/crs_39-22-123.5"
+            upstream="https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-39.pdf"
+            upstream-accessed-by-mirror="2025-05-26"
+            retrieved="2026-11-11"/>
+    <authority>unofficial</authority>
+    <completeness>excerpt</completeness>
+    <note>Subsection (1) (legislative declaration) is not ingested. The section heading mentions a "trigger", but no trigger provision appears in this snapshot's text, and its percentages for 2024, 2025 and 2026 differ from those the Department of Revenue publishes. The snapshot is therefore known to be out of date; see parameters/co.eitc.match_rate.json.</note>
+  </meta>
+
+  <provision id="/us/co/crs/39-22-123.5/2" num="(2)" status="in-force">
+    <provision id="/us/co/crs/39-22-123.5/2/a" num="(a)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2/a/I" num="(I)" status="in-force">
+        <content>For an income tax year commencing prior to January 1, 2022, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to ten percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2/a/II" num="(II)" status="in-force">
+        <content>This subsection (2)(a) is repealed, effective December 31, 2032.</content>
+      </provision>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2/b" num="(b)" status="in-force">
+      <content>For income tax years commencing on or after January 1, 2022, but before January 1, 2023, and income tax years commencing on or after January 1, 2026, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.</content>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2/c" num="(c)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2/c/I" num="(I)" status="in-force">
+        <content>For income tax years commencing on or after January 1, 2023, but before January 1, 2024, and for the income tax year commencing on January 1, 2025, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty-five percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2/c/II" num="(II)" status="in-force">
+        <content>This subsection (2)(c) is repealed, effective December 31, 2034.</content>
+      </provision>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2/d" num="(d)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2/d/I" num="(I)" status="in-force">
+        <content>For the income tax year commencing on January 1, 2024, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to thirty-eight percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2/d/II" num="(II)" status="in-force">
+        <content>This subsection (2)(d) is repealed, effective December 31, 2034.</content>
+      </provision>
+    </provision>
+  </provision>
+
+  <provision id="/us/co/crs/39-22-123.5/2.5" num="(2.5)" status="in-force">
+    <provision id="/us/co/crs/39-22-123.5/2.5/a" num="(a)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2.5/a/I" num="(I)" status="in-force">
+        <content>For income tax years commencing on or after January 1, 2020, but before January 1, 2022, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to ten percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2.5/a/II" num="(II)" status="in-force">
+        <content>This subsection (2.5)(a) is repealed, effective December 31, 2032.</content>
+      </provision>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2.5/b" num="(b)" status="in-force">
+      <content>For income tax years commencing on or after January 1, 2022, but before January 1, 2023, and income tax years commencing on or after January 1, 2026, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.</content>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2.5/c" num="(c)" status="repealed"/>
+    <provision id="/us/co/crs/39-22-123.5/2.5/d" num="(d)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2.5/d/I" num="(I)" status="in-force">
+        <content>For income tax years commencing on or after January 1, 2023, but before January 1, 2024, and for the income tax year commencing on January 1, 2025, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty-five percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2.5/d/II" num="(II)" status="in-force">
+        <content>This subsection (2.5)(d) is repealed, effective December 31, 2034.</content>
+      </provision>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2.5/e" num="(e)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2.5/e/I" num="(I)" status="in-force">
+        <content>For the income tax year commencing on January 1, 2024, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to thirty-eight percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2.5/e/II" num="(II)" status="in-force">
+        <content>This subsection (2.5)(e) is repealed, effective December 31, 2034.</content>
+      </provision>
+    </provision>
+  </provision>
+
+  <provision id="/us/co/crs/39-22-123.5/2.7" num="(2.7)" status="in-force">
+    <provision id="/us/co/crs/39-22-123.5/2.7/a" num="(a)" status="in-force">
+      <content>For income tax years commencing on or after January 1, 2022, but before January 1, 2023, and income tax years commencing on or after January 1, 2026, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty percent of the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2.</content>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2.7/b" num="(b)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2.7/b/I" num="(I)" status="in-force">
+        <content>For income tax years commencing on or after January 1, 2023, but before January 1, 2024, and for the income tax year commencing on January 1, 2025, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty-five percent of the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2.7/b/II" num="(II)" status="in-force">
+        <content>This subsection (2.7)(b) is repealed, effective December 31, 2034.</content>
+      </provision>
+    </provision>
+    <provision id="/us/co/crs/39-22-123.5/2.7/c" num="(c)" status="in-force">
+      <provision id="/us/co/crs/39-22-123.5/2.7/c/I" num="(I)" status="in-force">
+        <content>For the income tax year commencing on January 1, 2024, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to thirty-eight percent of the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2.</content>
+      </provision>
+      <provision id="/us/co/crs/39-22-123.5/2.7/c/II" num="(II)" status="in-force">
+        <content>This subsection (2.7)(c) is repealed, effective December 31, 2034.</content>
+      </provision>
+    </provision>
+  </provision>
+
+  <provision id="/us/co/crs/39-22-123.5/3" num="(3)" status="repealed"/>
+
+  <provision id="/us/co/crs/39-22-123.5/4" num="(4)" status="in-force">
+    <content>The amount of the credit allowed under this section that exceeds the resident individual’s income taxes due is refunded to the individual.</content>
+  </provision>
+
+  <provision id="/us/co/crs/39-22-123.5/5" num="(5)" status="in-force">
+    <content>In the case of a part-year resident, the credit allowed under this section is apportioned in the ratio determined under section 39-22-110 (1).</content>
+  </provision>
+
+  <provision id="/us/co/crs/39-22-123.5/6" num="(6)" status="in-force">
+    <content>The credit allowed under this section is not considered to be income or resources for the purpose of determining eligibility for the payment of public assistance benefits and medical assistance benefits authorized under state law or for a payment made under any other publicly funded programs.</content>
+  </provision>
+</section>

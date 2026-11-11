@@ -1,0 +1,95 @@
+{
+  "about": "Span-level extractions: which exact words of each provision carry which piece of a parameter. Each span's text must appear verbatim in the provision. tools/build_web.py locates it, re-parses dates and number words with deterministic code, and fails if the parsed value differs from 'normalized'.",
+  "extracted_by": "Claude (language model), by reading the provision text. Not reviewed by a lawyer.",
+  "classes": {
+    "period": "The tax years the provision covers",
+    "value": "The number the provision sets",
+    "base": "What the number is applied to",
+    "who": "Who the provision applies to",
+    "exception": "A cross-reference that can displace the provision",
+    "effect": "A consequence other than a number"
+  },
+  "groups": [
+    {
+      "provision": "/us/co/crs/39-22-104/1.7/b",
+      "parameter": "co.income_tax.rate_schedule",
+      "spans": [
+        {"class": "exception", "text": "Except as otherwise provided in section 39-22-627"},
+        {"class": "exception", "text": "subject to subsection (2) of this section"},
+        {"class": "period", "text": "on or after January 1, 2020, but before January 1, 2022", "normalized": {"from": "2020-01-01", "to": "2021-12-31"}},
+        {"class": "value", "text": "four and fifty-five one-hundredths percent", "normalized": "0.0455"},
+        {"class": "base", "text": "the federal taxable income, as determined pursuant to section 63 of the internal revenue code"},
+        {"class": "who", "text": "every individual, estate, and trust"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-104/1.7/c",
+      "parameter": "co.income_tax.rate_schedule",
+      "spans": [
+        {"class": "exception", "text": "Except as otherwise provided in section 39-22-627"},
+        {"class": "exception", "text": "subject to subsection (2) of this section"},
+        {"class": "period", "text": "on or after January 1, 2022", "normalized": {"from": "2022-01-01", "to": null}},
+        {"class": "value", "text": "four and forty one-hundredths percent", "normalized": "0.044"},
+        {"class": "base", "text": "the federal taxable income, as determined pursuant to section 63 of the internal revenue code"},
+        {"class": "who", "text": "every individual, estate, and trust"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-104/2",
+      "parameter": null,
+      "spans": [
+        {"class": "base", "text": "the federal taxable income shall be modified as provided in subsections (3) and (4) of this section"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-123.5/2/a/I",
+      "parameter": "co.eitc.match_rate",
+      "spans": [
+        {"class": "period", "text": "prior to January 1, 2022", "normalized": {"from": null, "to": "2021-12-31"}},
+        {"class": "who", "text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return"},
+        {"class": "value", "text": "ten percent", "normalized": "0.10"},
+        {"class": "base", "text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-123.5/2/b",
+      "parameter": "co.eitc.match_rate",
+      "spans": [
+        {"class": "period", "text": "on or after January 1, 2022, but before January 1, 2023", "normalized": {"from": "2022-01-01", "to": "2022-12-31"}},
+        {"class": "period", "text": "on or after January 1, 2026", "normalized": {"from": "2026-01-01", "to": null}},
+        {"class": "who", "text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return"},
+        {"class": "value", "text": "twenty percent", "normalized": "0.20"},
+        {"class": "base", "text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-123.5/2/c/I",
+      "parameter": "co.eitc.match_rate",
+      "spans": [
+        {"class": "period", "text": "on or after January 1, 2023, but before January 1, 2024", "normalized": {"from": "2023-01-01", "to": "2023-12-31"}},
+        {"class": "period", "text": "the income tax year commencing on January 1, 2025", "normalized": {"from": "2025-01-01", "to": "2025-12-31"}},
+        {"class": "who", "text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return"},
+        {"class": "value", "text": "twenty-five percent", "normalized": "0.25"},
+        {"class": "base", "text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-123.5/2/d/I",
+      "parameter": "co.eitc.match_rate",
+      "spans": [
+        {"class": "period", "text": "the income tax year commencing on January 1, 2024", "normalized": {"from": "2024-01-01", "to": "2024-12-31"}},
+        {"class": "who", "text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return"},
+        {"class": "value", "text": "thirty-eight percent", "normalized": "0.38"},
+        {"class": "base", "text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year"}
+      ]
+    },
+    {
+      "provision": "/us/co/crs/39-22-123.5/4",
+      "parameter": null,
+      "spans": [
+        {"class": "base", "text": "The amount of the credit allowed under this section that exceeds the resident individual’s income taxes due"},
+        {"class": "effect", "text": "is refunded to the individual"}
+      ]
+    }
+  ]
+}

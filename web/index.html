@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colorado tax law, from text to parameter</title>
+<script src="assets/uswds/js/uswds-init.min.js"></script>
+<link rel="stylesheet" href="assets/uswds/css/uswds.min.css">
+<style>
+/* Built with the U.S. Web Design System (USWDS 3). Only what USWDS has no
+   component for is styled here: highlighted statute spans and the provision list. */
+.sp { border-radius: 2px; padding: 1px 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; color: inherit; }
+.sp-period { background: #d9e8f6; color: #1a4480; }
+.sp-value { background: #fee685; color: #5c410a; }
+.sp-base { background: #dbebde; color: #19311e; }
+.sp-who { background: #ede3ff; color: #54278f; }
+.sp-exception { background: #f8dfe2; color: #8b0a03; }
+.sp-effect { background: #ccecf2; color: #0e4f5c; }
+.legend .sp { font-size: .82rem; margin-right: 4px; }
+.prov { padding: 6px 10px; border-left: 4px solid transparent; margin-left: calc(var(--depth) * 16px); line-height: 1.6; }
+.prov.clickable { cursor: pointer; }
+.prov.clickable:hover { border-left-color: #a9aeb1; }
+.prov .label { font-weight: 700; color: #565c65; margin-right: 6px; }
+.prov.repealed { color: #71767a; font-style: italic; }
+.has-focus .prov:not(.focus) { opacity: .5; }
+.prov.focus { border-left-color: #005ea2; background: #f0f0f0; }
+.prov.focus .sp.hot { outline: 2px solid #005ea2; outline-offset: 1px; font-weight: 700; }
+.derived { display: inline-block; margin-left: 4px; padding: 0 8px; border-radius: 99rem; background: #005ea2; color: #fff; font-size: .82rem; font-weight: 700; white-space: nowrap; }
+.pane-scroll { border: 1px solid #dfe1e2; border-radius: 4px; padding: 16px; background: #fff; }
+@media (min-width: 64em) { .pane-scroll { max-height: calc(100vh - 32px); overflow: auto; position: sticky; top: 16px; } }
+tr.selected td, tr.selected th { background: #e7f6f8; }
+.usa-table .usa-tag { white-space: nowrap; }
+.spans { list-style: none; padding: 0; margin: 8px 0 0; }
+.spans li { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 8px; align-items: start; margin-bottom: 6px; max-width: none; }
+.spans li.other { opacity: .5; }
+.spans .sp { text-align: center; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; }
+.arrow { color: #005ea2; font-weight: 700; white-space: nowrap; }
+.big { font-size: 1.6rem; font-weight: 700; margin-right: 8px; }
+.usa-process-list__item { max-width: none; }
+.usa-process-list__item p, .usa-alert__text { max-width: none; }
+</style>
+</head>
+<body>
+<a class="usa-skipnav" href="#main-content">Skip to main content</a>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container maxw-widescreen">
+    <div class="usa-navbar">
+      <div class="usa-logo"><em class="usa-logo__text">Colorado tax law as code</em></div>
+    </div>
+  </div>
+</header>
+
+<main id="main-content">
+  <div class="grid-container-widescreen padding-y-3">
+    <div class="usa-alert usa-alert--warning usa-alert--slim">
+      <div class="usa-alert__body">
+        <p class="usa-alert__text"><strong>Unofficial prototype.</strong> This is not a government website, not tax advice and not a statement of Colorado law.</p>
+      </div>
+    </div>
+    <h1 class="font-heading-xl margin-top-3 margin-bottom-1">From statute text to parameter</h1>
+    <p class="usa-intro margin-top-0 maxw-tablet-lg">Every number the calculator uses is traced back to the exact words of the statute that state it. Choose a tax year to see how its value was built.</p>
+
+    <div class="grid-row grid-gap margin-top-3">
+      <section class="desktop:grid-col-7 margin-bottom-3" aria-labelledby="text-h">
+        <div class="pane-scroll" id="text-pane"></div>
+      </section>
+      <section class="desktop:grid-col-5" aria-labelledby="param-h">
+        <div class="pane-scroll" id="param-pane"></div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="grid-container-widescreen padding-y-3 border-top border-base-lighter">
+  <p class="font-body-3xs text-base-dark margin-0" id="foot"></p>
+</footer>
+
+<script>window.COTAX = {"generated": "2026-11-11", "uswds": "3.14.0", "classes": {"period": "The tax years the provision covers", "value": "The number the provision sets", "base": "What the number is applied to", "who": "Who the provision applies to", "exception": "A cross-reference that can displace the provision", "effect": "A consequence other than a number"}, "extracted_by": "Claude (language model), by reading the provision text. Not reviewed by a lawyer.", "sections": [{"id": "/us/co/crs/39-22-104", "citation": "C.R.S. 39-22-104", "heading": "Income tax imposed on individuals, estates, and trusts - single rate - report - legislative declaration - definitions - repeal", "source": {"publisher": "public.law (unofficial mirror)", "url": "https://colorado.public.law/statutes/crs_39-22-104", "upstream": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-39.pdf", "upstream-accessed-by-mirror": "2025-05-26", "retrieved": "2026-11-11"}, "authority": "unofficial", "note": "Only the rate provisions for tax years from 2020 and subsection (2) are ingested. Subsections (1), (1.5), (1.7)(a), (3), (4) and (5) (historic rates; additions to and subtractions from federal taxable income) are not ingested. The snapshot predates at least one amendment that the Department of Revenue's published figures reflect; see parameters/ for the recorded conflicts.", "provisions": [{"id": "/us/co/crs/39-22-104/1.7", "label": "(1.7)", "depth": 0, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-104/1.7/b", "label": "(1.7)(b)", "depth": 1, "status": "in-force", "text": "Except as otherwise provided in section 39-22-627, subject to subsection (2) of this section, with respect to taxable years commencing on or after January 1, 2020, but before January 1, 2022, a tax of four and fifty-five one-hundredths percent is imposed on the federal taxable income, as determined pursuant to section 63 of the internal revenue code, of every individual, estate, and trust.", "spans": [{"start": 0, "end": 49, "class": "exception", "normalized": null}, {"start": 51, "end": 92, "class": "exception", "normalized": null}, {"start": 135, "end": 190, "class": "period", "normalized": {"from": "2020-01-01", "to": "2021-12-31"}}, {"start": 201, "end": 243, "class": "value", "normalized": "0.0455"}, {"start": 258, "end": 351, "class": "base", "normalized": null}, {"start": 356, "end": 391, "class": "who", "normalized": null}], "parameter": "co.income_tax.rate_schedule"}, {"id": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "depth": 1, "status": "in-force", "text": "Except as otherwise provided in section 39-22-627, subject to subsection (2) of this section, with respect to taxable years commencing on or after January 1, 2022, a tax of four and forty one-hundredths percent is imposed on the federal taxable income, as determined pursuant to section 63 of the internal revenue code, of every individual, estate, and trust.", "spans": [{"start": 0, "end": 49, "class": "exception", "normalized": null}, {"start": 51, "end": 92, "class": "exception", "normalized": null}, {"start": 135, "end": 162, "class": "period", "normalized": {"from": "2022-01-01", "to": null}}, {"start": 173, "end": 210, "class": "value", "normalized": "0.044"}, {"start": 225, "end": 318, "class": "base", "normalized": null}, {"start": 323, "end": 358, "class": "who", "normalized": null}], "parameter": "co.income_tax.rate_schedule"}, {"id": "/us/co/crs/39-22-104/2", "label": "(2)", "depth": 0, "status": "in-force", "text": "Prior to the application of the rate of tax prescribed in subsection (1), (1.5), or (1.7) of this section, the federal taxable income shall be modified as provided in subsections (3) and (4) of this section.", "spans": [{"start": 107, "end": 206, "class": "base", "normalized": null}], "parameter": null}]}, {"id": "/us/co/crs/39-22-123.5", "citation": "C.R.S. 39-22-123.5", "heading": "Earned income tax credit - not a refund of excess state revenues - trigger - legislative declaration - repeal", "source": {"publisher": "public.law (unofficial mirror)", "url": "https://colorado.public.law/statutes/crs_39-22-123.5", "upstream": "https://leg.colorado.gov/sites/default/files/images/olls/crs2024-title-39.pdf", "upstream-accessed-by-mirror": "2025-05-26", "retrieved": "2026-11-11"}, "authority": "unofficial", "note": "Subsection (1) (legislative declaration) is not ingested. The section heading mentions a \"trigger\", but no trigger provision appears in this snapshot's text, and its percentages for 2024, 2025 and 2026 differ from those the Department of Revenue publishes. The snapshot is therefore known to be out of date; see parameters/co.eitc.match_rate.json.", "provisions": [{"id": "/us/co/crs/39-22-123.5/2", "label": "(2)", "depth": 0, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2/a", "label": "(2)(a)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2/a/I", "label": "(2)(a)(I)", "depth": 2, "status": "in-force", "text": "For an income tax year commencing prior to January 1, 2022, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to ten percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.", "spans": [{"start": 34, "end": 58, "class": "period", "normalized": {"from": null, "to": "2021-12-31"}}, {"start": 60, "end": 159, "class": "who", "normalized": null}, {"start": 260, "end": 271, "class": "value", "normalized": "0.1"}, {"start": 275, "end": 385, "class": "base", "normalized": null}], "parameter": "co.eitc.match_rate"}, {"id": "/us/co/crs/39-22-123.5/2/a/II", "label": "(2)(a)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2)(a) is repealed, effective December 31, 2032.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2/b", "label": "(2)(b)", "depth": 1, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2022, but before January 1, 2023, and income tax years commencing on or after January 1, 2026, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.", "spans": [{"start": 32, "end": 87, "class": "period", "normalized": {"from": "2022-01-01", "to": "2022-12-31"}}, {"start": 121, "end": 148, "class": "period", "normalized": {"from": "2026-01-01", "to": null}}, {"start": 150, "end": 249, "class": "who", "normalized": null}, {"start": 350, "end": 364, "class": "value", "normalized": "0.2"}, {"start": 368, "end": 478, "class": "base", "normalized": null}], "parameter": "co.eitc.match_rate"}, {"id": "/us/co/crs/39-22-123.5/2/c", "label": "(2)(c)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2/c/I", "label": "(2)(c)(I)", "depth": 2, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2023, but before January 1, 2024, and for the income tax year commencing on January 1, 2025, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty-five percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.", "spans": [{"start": 32, "end": 87, "class": "period", "normalized": {"from": "2023-01-01", "to": "2023-12-31"}}, {"start": 97, "end": 146, "class": "period", "normalized": {"from": "2025-01-01", "to": "2025-12-31"}}, {"start": 148, "end": 247, "class": "who", "normalized": null}, {"start": 348, "end": 367, "class": "value", "normalized": "0.25"}, {"start": 371, "end": 481, "class": "base", "normalized": null}], "parameter": "co.eitc.match_rate"}, {"id": "/us/co/crs/39-22-123.5/2/c/II", "label": "(2)(c)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2)(c) is repealed, effective December 31, 2034.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2/d", "label": "(2)(d)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2/d/I", "label": "(2)(d)(I)", "depth": 2, "status": "in-force", "text": "For the income tax year commencing on January 1, 2024, a resident individual who claims an earned income tax credit on the individual’s federal tax return is allowed an earned income tax credit against the taxes due under this article 22 that is equal to thirty-eight percent of the federal credit that the resident individual claimed on his or her federal tax return for the same tax year.", "spans": [{"start": 4, "end": 53, "class": "period", "normalized": {"from": "2024-01-01", "to": "2024-12-31"}}, {"start": 55, "end": 154, "class": "who", "normalized": null}, {"start": 255, "end": 275, "class": "value", "normalized": "0.38"}, {"start": 279, "end": 389, "class": "base", "normalized": null}], "parameter": "co.eitc.match_rate"}, {"id": "/us/co/crs/39-22-123.5/2/d/II", "label": "(2)(d)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2)(d) is repealed, effective December 31, 2034.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5", "label": "(2.5)", "depth": 0, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/a", "label": "(2.5)(a)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/a/I", "label": "(2.5)(a)(I)", "depth": 2, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2020, but before January 1, 2022, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to ten percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/a/II", "label": "(2.5)(a)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2.5)(a) is repealed, effective December 31, 2032.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/b", "label": "(2.5)(b)", "depth": 1, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2022, but before January 1, 2023, and income tax years commencing on or after January 1, 2026, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/c", "label": "(2.5)(c)", "depth": 1, "status": "repealed", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/d", "label": "(2.5)(d)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/d/I", "label": "(2.5)(d)(I)", "depth": 2, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2023, but before January 1, 2024, and for the income tax year commencing on January 1, 2025, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty-five percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/d/II", "label": "(2.5)(d)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2.5)(d) is repealed, effective December 31, 2034.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/e", "label": "(2.5)(e)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/e/I", "label": "(2.5)(e)(I)", "depth": 2, "status": "in-force", "text": "For the income tax year commencing on January 1, 2024, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to thirty-eight percent of the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.5/e/II", "label": "(2.5)(e)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2.5)(e) is repealed, effective December 31, 2034.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7", "label": "(2.7)", "depth": 0, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/a", "label": "(2.7)(a)", "depth": 1, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2022, but before January 1, 2023, and income tax years commencing on or after January 1, 2026, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty percent of the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/b", "label": "(2.7)(b)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/b/I", "label": "(2.7)(b)(I)", "depth": 2, "status": "in-force", "text": "For income tax years commencing on or after January 1, 2023, but before January 1, 2024, and for the income tax year commencing on January 1, 2025, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to twenty-five percent of the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/b/II", "label": "(2.7)(b)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2.7)(b) is repealed, effective December 31, 2034.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/c", "label": "(2.7)(c)", "depth": 1, "status": "in-force", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/c/I", "label": "(2.7)(c)(I)", "depth": 2, "status": "in-force", "text": "For the income tax year commencing on January 1, 2024, a resident individual is allowed an earned income tax credit against the taxes due under this article 22 that is equal to thirty-eight percent of the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/2.7/c/II", "label": "(2.7)(c)(II)", "depth": 2, "status": "in-force", "text": "This subsection (2.7)(c) is repealed, effective December 31, 2034.", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/3", "label": "(3)", "depth": 0, "status": "repealed", "text": null, "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/4", "label": "(4)", "depth": 0, "status": "in-force", "text": "The amount of the credit allowed under this section that exceeds the resident individual’s income taxes due is refunded to the individual.", "spans": [{"start": 0, "end": 107, "class": "base", "normalized": null}, {"start": 108, "end": 137, "class": "effect", "normalized": null}], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/5", "label": "(5)", "depth": 0, "status": "in-force", "text": "In the case of a part-year resident, the credit allowed under this section is apportioned in the ratio determined under section 39-22-110 (1).", "spans": [], "parameter": null}, {"id": "/us/co/crs/39-22-123.5/6", "label": "(6)", "depth": 0, "status": "in-force", "text": "The credit allowed under this section is not considered to be income or resources for the purpose of determining eligibility for the payment of public assistance benefits and medical assistance benefits authorized under state law or for a payment made under any other publicly funded programs.", "spans": [], "parameter": null}]}], "parameters": [{"id": "co.eitc.match_rate", "description": "Colorado earned income tax credit as a fraction of the federal earned income credit.", "value_type": "rate", "gaps": ["No value is recorded for tax years from 2027. The Department of Revenue page speaks only to 2026, and the statute snapshot is known to be out of date, so the engine refuses to compute the credit for 2027 onward."], "years": [{"year": 2022, "statute": {"provision": "/us/co/crs/39-22-123.5/2/b", "label": "(2)(b)", "value": "0.2", "period_span": 0, "value_span": 3}, "used": "0.20", "status": "statute_snapshot", "other_sources": [], "conflict_note": null, "caveat": "Statute snapshot only. The Department of Revenue page read on 2026-11-11 does not state a 2022 percentage."}, {"year": 2023, "statute": {"provision": "/us/co/crs/39-22-123.5/2/c/I", "label": "(2)(c)(I)", "value": "0.25", "period_span": 0, "value_span": 3}, "used": "0.25", "status": "statute_snapshot", "other_sources": [], "conflict_note": null, "caveat": "Statute snapshot only. The Department of Revenue page read on 2026-11-11 does not state a 2023 percentage."}, {"year": 2024, "statute": {"provision": "/us/co/crs/39-22-123.5/2/d/I", "label": "(2)(d)(I)", "value": "0.38", "period_span": 0, "value_span": 2}, "used": "0.50", "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/CTC-EITC", "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.", "retrieved": "2026-11-11", "states": "0.50"}], "conflict_note": "The ingested statute snapshot says 38% for 2024; the Department of Revenue publishes 50%. The agency value is used. The snapshot's heading mentions a 'trigger' that its text does not contain, so it predates or omits the amendment that set 50%. That amendment has not been ingested.", "caveat": null}, {"year": 2025, "statute": {"provision": "/us/co/crs/39-22-123.5/2/c/I", "label": "(2)(c)(I)", "value": "0.25", "period_span": 1, "value_span": 3}, "used": "0.50", "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/CTC-EITC", "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.", "retrieved": "2026-11-11", "states": "0.50"}], "conflict_note": "The ingested statute snapshot says 25% for 2025; the Department of Revenue publishes 50%. The agency value is used. Same cause as the 2024 conflict.", "caveat": null}, {"year": 2026, "statute": {"provision": "/us/co/crs/39-22-123.5/2/b", "label": "(2)(b)", "value": "0.2", "period_span": 1, "value_span": 3}, "used": "0.25", "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/CTC-EITC", "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.", "retrieved": "2026-11-11", "states": "0.25"}], "conflict_note": "The ingested statute snapshot says 20% for 2026 and later; the Department of Revenue publishes 25% for 2026. The agency value is used. Same cause as the 2024 conflict.", "caveat": null}, {"year": 2027, "statute": {"provision": "/us/co/crs/39-22-123.5/2/b", "label": "(2)(b)", "value": "0.2", "period_span": 1, "value_span": 3}, "used": null, "status": "not_recorded", "other_sources": [], "conflict_note": null, "caveat": null}]}, {"id": "co.income_tax.rate_schedule", "description": "Colorado individual income tax rate schedule, applied to Colorado taxable income. A flat rate is a schedule with one bracket.", "value_type": "bracket_schedule", "gaps": [], "years": [{"year": 2022, "statute": {"provision": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "value": "0.044", "period_span": 2, "value_span": 3}, "used": [{"over": "0", "rate": "0.044"}], "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/individual-income-tax-guide", "quote": "| 2022 | 4.4% | ... | 2023 | 4.4% |", "retrieved": "2026-11-11", "states": [{"over": "0", "rate": "0.044"}]}], "conflict_note": null, "caveat": null}, {"year": 2023, "statute": {"provision": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "value": "0.044", "period_span": 2, "value_span": 3}, "used": [{"over": "0", "rate": "0.044"}], "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/individual-income-tax-guide", "quote": "| 2022 | 4.4% | ... | 2023 | 4.4% |", "retrieved": "2026-11-11", "states": [{"over": "0", "rate": "0.044"}]}], "conflict_note": null, "caveat": null}, {"year": 2024, "statute": {"provision": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "value": "0.044", "period_span": 2, "value_span": 3}, "used": [{"over": "0", "rate": "0.0425"}], "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/individual-income-tax-guide", "quote": "| 2024 | 4.25% |", "retrieved": "2026-11-11", "states": [{"over": "0", "rate": "0.0425"}]}], "conflict_note": "The ingested statute text states 4.40% 'Except as otherwise provided in section 39-22-627' (temporary rate adjustment to refund excess state revenues). The Department of Revenue publishes 4.25% for 2024, so the agency value is used. The 39-22-627 text on the same mirror describes only a 4.63% to 4.50% reduction and cannot produce 4.25%, so the mirror snapshot predates the provision that set this rate. That provision has not been ingested.", "caveat": null}, {"year": 2025, "statute": {"provision": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "value": "0.044", "period_span": 2, "value_span": 3}, "used": [{"over": "0", "rate": "0.044"}], "status": "agency_published", "other_sources": [{"kind": "agency", "publisher": "Colorado Department of Revenue", "url": "https://tax.colorado.gov/individual-income-tax-guide", "quote": "| 2025 | 4.4% |", "retrieved": "2026-11-11", "states": [{"over": "0", "rate": "0.044"}]}], "conflict_note": null, "caveat": null}, {"year": 2026, "statute": {"provision": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "value": "0.044", "period_span": 2, "value_span": 3}, "used": [{"over": "0", "rate": "0.044"}], "status": "statutory_default", "other_sources": [], "conflict_note": null, "caveat": "The Department of Revenue's rate table stopped at 2025 when read on 2026-11-11. The statutory 4.40% applies unless a temporary reduction under section 39-22-627 is made for 2026; none was confirmed or ruled out."}, {"year": 2027, "statute": {"provision": "/us/co/crs/39-22-104/1.7/c", "label": "(1.7)(c)", "value": "0.044", "period_span": 2, "value_span": 3}, "used": [{"over": "0", "rate": "0.037"}, {"over": "25000", "rate": "0.042"}, {"over": "100000", "rate": "0.044"}, {"over": "500000", "rate": "0.074"}, {"over": "750000", "rate": "0.079"}, {"over": "1000000", "rate": "0.084"}], "status": "reported_passed_uncertified", "other_sources": [{"kind": "news", "publisher": "The Colorado Sun", "url": "https://coloradosun.com/2026/11/06/amendment-87-results-passes-graduated-income-tax/", "retrieved": "2026-11-11", "summary": "Amendment 87 (2026): 3.7% to $25,000; 4.2% to $100,000; 4.4% to $500,000; 7.4% to $750,000; 7.9% to $1 million; 8.4% above; tax years beginning on or after 1 January 2027."}], "conflict_note": null, "caveat": "Election result was unofficial and uncertified as of 2026-11-11. The measure's text has not been ingested. Unknown: whether thresholds differ by filing status, whether they are indexed to inflation, which income base they apply to, and how they interact with temporary rate reductions. One schedule is applied to every filer."}]}], "rules": [{"id": "co.eitc.amount", "cites": ["/us/co/crs/39-22-123.5/2", "/us/co/crs/39-22-123.5/2.5", "/us/co/crs/39-22-123.5/2.7"], "parameters": ["co.eitc.match_rate"], "summary": "Credit = match rate x federal earned income credit."}, {"id": "co.income_tax.before_credits", "cites": ["/us/co/crs/39-22-104/1.7/c", "/us/co/crs/39-22-104/2"], "parameters": ["co.income_tax.rate_schedule"], "summary": "Tax = rate schedule applied to Colorado taxable income."}, {"id": "co.income_tax.net_of_eitc", "cites": ["/us/co/crs/39-22-123.5/4"], "parameters": [], "summary": "Refundable: credit above the tax due is refunded, so the net can be negative."}]};</script>
+<script>
+(function () {
+  var D = window.COTAX;
+  var STATUS = {
+    agency_published: ["Agency published", "bg-success-dark"],
+    statute_snapshot: ["Statute text only", "bg-primary"],
+    statutory_default: ["Statute default", "bg-warning text-ink"],
+    reported_passed_uncertified: ["Reported, uncertified", "bg-warning text-ink"],
+    not_recorded: ["Not recorded", "bg-base-dark"]
+  };
+  var state = { param: "co.eitc.match_rate", year: 2024, section: null };
+
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    for (var k in (attrs || {})) {
+      if (k === "class") el.className = attrs[k];
+      else if (k === "onclick") el.addEventListener("click", attrs[k]);
+      else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+    }
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function pct(v) { return (+(parseFloat(v) * 100).toFixed(2)) + "%"; }
+  function usedLabel(v) {
+    if (v == null) return "No value";
+    if (Array.isArray(v)) {
+      if (v.length === 1) return pct(v[0].rate);
+      return pct(v[0].rate) + " to " + pct(v[v.length - 1].rate) + ", " + v.length + " brackets";
+    }
+    return pct(v);
+  }
+  function sameAsStatute(y) {
+    if (!y.statute || y.used == null) return false;
+    if (Array.isArray(y.used)) return y.used.length === 1 && parseFloat(y.used[0].rate) === parseFloat(y.statute.value);
+    return parseFloat(y.used) === parseFloat(y.statute.value);
+  }
+  function period(n) {
+    var a = n.from ? n.from.slice(0, 4) : null, b = n.to ? n.to.slice(0, 4) : null;
+    if (a && b) return a === b ? "tax year " + a : "tax years " + a + " to " + b;
+    if (a) return "tax years " + a + " onward";
+    return "tax years through " + b;
+  }
+  function tag(status) {
+    return h("span", { class: "usa-tag " + STATUS[status][1] }, STATUS[status][0]);
+  }
+  function segmented(items, current, pick) {
+    var ul = h("ul", { class: "usa-button-group usa-button-group--segmented margin-bottom-2" });
+    items.forEach(function (it) {
+      ul.appendChild(h("li", { class: "usa-button-group__item" },
+        h("button", { type: "button", class: "usa-button" + (it.id === current ? "" : " usa-button--outline"),
+                      "aria-pressed": String(it.id === current), onclick: function () { pick(it.id); } }, it.label)));
+    });
+    return ul;
+  }
+  function warning(node) {
+    return h("div", { class: "usa-alert usa-alert--warning usa-alert--slim usa-alert--no-icon margin-y-2" },
+      h("div", { class: "usa-alert__body" }, h("p", { class: "usa-alert__text" }, node)));
+  }
+  function param() { return D.parameters.filter(function (p) { return p.id === state.param; })[0]; }
+  function yearRow() { return param().years.filter(function (y) { return y.year === state.year; })[0]; }
+  function findProvision(id) {
+    for (var i = 0; i < D.sections.length; i++)
+      for (var j = 0; j < D.sections[i].provisions.length; j++)
+        if (D.sections[i].provisions[j].id === id) return { section: D.sections[i], provision: D.sections[i].provisions[j] };
+    return null;
+  }
+  function syncSection() {
+    var y = yearRow();
+    if (y.statute) state.section = findProvision(y.statute.provision).section.id;
+    else if (!state.section) state.section = D.sections[0].id;
+  }
+
+  function renderText() {
+    var pane = document.getElementById("text-pane");
+    pane.textContent = "";
+    var y = yearRow(), focusId = y.statute ? y.statute.provision : null;
+    var section = D.sections.filter(function (s) { return s.id === state.section; })[0];
+
+    pane.appendChild(h("h2", { class: "font-heading-lg margin-top-0", id: "text-h" }, "Statute text"));
+    pane.appendChild(segmented(
+      D.sections.map(function (s) { return { id: s.id, label: s.citation }; }),
+      state.section, function (id) { state.section = id; renderText(); }));
+
+    pane.appendChild(h("h3", { class: "font-heading-md margin-bottom-05" }, section.citation));
+    pane.appendChild(h("p", { class: "text-base-dark font-body-xs margin-top-0" }, section.heading));
+    var note = h("span", null, h("strong", null, "Unofficial copy. "), "Read from ",
+      h("a", { class: "usa-link usa-link--external", href: section.source.url, target: "_blank", rel: "noopener" }, section.source.publisher),
+      " on " + section.source.retrieved + ". " + section.note);
+    pane.appendChild(warning(note));
+
+    var legend = h("p", { class: "legend margin-y-2" }, h("span", { class: "font-body-xs text-base-dark margin-right-1" }, "Marked spans:"));
+    Object.keys(D.classes).forEach(function (c) {
+      legend.appendChild(h("span", { class: "sp sp-" + c, title: D.classes[c] }, c));
+    });
+    pane.appendChild(legend);
+
+    var list = h("div", { class: focusId && findProvision(focusId).section.id === section.id ? "has-focus" : "" });
+    section.provisions.forEach(function (p) {
+      var isFocus = p.id === focusId;
+      var cls = "prov" + (isFocus ? " focus" : "") + (p.status === "repealed" ? " repealed" : "") + (p.parameter ? " clickable" : "");
+      var row = h("div", { class: cls, style: "--depth:" + p.depth, id: "prov-" + p.id });
+      row.appendChild(h("span", { class: "label" }, p.label));
+      if (p.status === "repealed") row.appendChild(document.createTextNode("Repealed."));
+      else if (p.text) {
+        var pos = 0;
+        p.spans.forEach(function (s, i) {
+          if (s.start > pos) row.appendChild(document.createTextNode(p.text.slice(pos, s.start)));
+          var hot = isFocus && (i === y.statute.period_span || i === y.statute.value_span);
+          var tip = D.classes[s.class];
+          if (s.class === "period") tip += ": " + period(s.normalized);
+          if (s.class === "value") tip += ": " + pct(s.normalized);
+          row.appendChild(h("mark", { class: "sp sp-" + s.class + (hot ? " hot" : ""), title: tip }, p.text.slice(s.start, s.end)));
+          if (hot) row.appendChild(h("span", { class: "derived" }, s.class === "period" ? period(s.normalized) : pct(s.normalized)));
+          pos = s.end;
+        });
+        if (pos < p.text.length) row.appendChild(document.createTextNode(p.text.slice(pos)));
+      }
+      if (p.parameter) row.addEventListener("click", function () {
+        var target = D.parameters.filter(function (q) { return q.id === p.parameter; })[0];
+        var hit = target.years.filter(function (yy) { return yy.statute && yy.statute.provision === p.id; })[0];
+        if (!hit) return;
+        state.param = p.parameter; state.year = hit.year; render(false);
+      });
+      list.appendChild(row);
+    });
+    pane.appendChild(list);
+  }
+
+  function renderParams() {
+    var pane = document.getElementById("param-pane");
+    pane.textContent = "";
+    var p = param(), y = yearRow();
+
+    pane.appendChild(h("h2", { class: "font-heading-lg margin-top-0", id: "param-h" }, "Parameters"));
+    pane.appendChild(segmented(
+      D.parameters.map(function (q) { return { id: q.id, label: q.id.indexOf("eitc") >= 0 ? "Earned income credit" : "Income tax rate" }; }),
+      state.param, function (id) { state.param = id; render(true); }));
+    pane.appendChild(h("p", { class: "font-body-xs margin-top-0" }, h("code", null, p.id), h("br"), p.description));
+
+    var body = h("tbody");
+    p.years.forEach(function (r) {
+      var differs = r.statute && !sameAsStatute(r);
+      body.appendChild(h("tr", { class: r.year === state.year ? "selected" : "" },
+        h("th", { scope: "row" }, h("button", { type: "button", class: "usa-button usa-button--unstyled",
+          "aria-pressed": String(r.year === state.year), onclick: function () { state.year = r.year; render(true); } }, String(r.year))),
+        h("td", null, r.statute ? pct(r.statute.value) : "None"),
+        h("td", { class: differs ? "text-bold" : "" }, usedLabel(r.used) + (differs && r.used != null ? " (differs)" : "")),
+        h("td", null, tag(r.status))));
+    });
+    pane.appendChild(h("table", { class: "usa-table usa-table--borderless usa-table--compact width-full margin-top-1" },
+      h("caption", { class: "usa-sr-only" }, "Value by tax year: what the statute text gives and what the engine uses"),
+      h("thead", null, h("tr", null,
+        h("th", { scope: "col" }, "Tax year"), h("th", { scope: "col" }, "Text says"),
+        h("th", { scope: "col" }, "Value used"), h("th", { scope: "col" }, "Basis"))),
+      body));
+
+    var steps = h("ol", { class: "usa-process-list margin-top-2" });
+    function step(title) {
+      var li = h("li", { class: "usa-process-list__item" }, h("h4", { class: "usa-process-list__heading font-heading-sm" }, title));
+      for (var i = 1; i < arguments.length; i++) if (arguments[i]) li.appendChild(arguments[i]);
+      steps.appendChild(li);
+    }
+
+    if (y.statute) {
+      var found = findProvision(y.statute.provision);
+      step("Statute text", h("p", { class: "margin-top-05" }, found.section.citation + y.statute.label + ", highlighted in the statute text."));
+      var spans = h("ul", { class: "spans" });
+      found.provision.spans.forEach(function (s, i) {
+        var other = s.class === "period" && i !== y.statute.period_span;
+        var line = h("div", null, "“" + found.provision.text.slice(s.start, s.end) + "”");
+        if (s.class === "period") line.appendChild(h("span", { class: "arrow" }, " → " + period(s.normalized) + (other ? " (not this year)" : "")));
+        if (s.class === "value") line.appendChild(h("span", { class: "arrow" }, " → " + pct(s.normalized)));
+        spans.appendChild(h("li", { class: other ? "other" : "" }, h("span", { class: "sp sp-" + s.class }, s.class), line));
+      });
+      step("Marked spans", h("p", { class: "margin-top-05 text-base-dark" }, "Dates and number words are re-parsed by code and checked against the text."), spans);
+      step("What the text alone gives", h("p", { class: "margin-top-05" }, h("span", { class: "big" }, pct(y.statute.value)), "for tax year " + y.year));
+    } else {
+      step("Statute text", h("p", { class: "margin-top-05" }, "No ingested provision covers tax year " + y.year + "."));
+    }
+
+    var others = h("div", { class: "margin-top-05" });
+    if (!y.other_sources.length) others.appendChild(h("p", { class: "text-base-dark" }, "None recorded for this year."));
+    y.other_sources.forEach(function (s) {
+      others.appendChild(h("p", { class: "margin-bottom-05" }, s.publisher + (s.states ? " states " + usedLabel(s.states) + ". " : ". "),
+        h("a", { class: "usa-link usa-link--external", href: s.url, target: "_blank", rel: "noopener" }, "Source")));
+      others.appendChild(h("blockquote", { class: "border-left-05 border-base-light padding-left-2 margin-x-0 margin-y-1 font-body-xs" }, s.quote || s.summary));
+    });
+    step("Other sources", others);
+
+    var used = h("div", { class: "margin-top-05" }, h("span", { class: "big" }, usedLabel(y.used)), tag(y.status));
+    if (Array.isArray(y.used) && y.used.length > 1) {
+      var ul = h("ul", { class: "spans" });
+      y.used.forEach(function (b, i) {
+        var top = y.used[i + 1] ? ", up to $" + Number(y.used[i + 1].over).toLocaleString("en-US") : "";
+        ul.appendChild(h("li", null, h("span", { class: "sp sp-value" }, pct(b.rate)), h("div", null, "on income over $" + Number(b.over).toLocaleString("en-US") + top)));
+      });
+      used.appendChild(ul);
+    }
+    var why = y.conflict_note || y.caveat || (y.used == null ? p.gaps.join(" ") : null);
+    step("Value used", used, why ? warning(why) : null);
+
+    var rl = h("div", { class: "margin-top-05" });
+    D.rules.filter(function (r) { return r.parameters.indexOf(p.id) >= 0; }).forEach(function (r) {
+      rl.appendChild(h("p", null, h("code", null, r.id), h("br"), r.summary));
+    });
+    step("Rule that uses it", rl);
+
+    pane.appendChild(h("h3", { class: "font-heading-md margin-top-3 margin-bottom-0" }, "How the " + y.year + " value was built"));
+    pane.appendChild(steps);
+  }
+
+  function render(scroll) {
+    syncSection();
+    renderText();
+    renderParams();
+    var y = yearRow();
+    if (scroll && y.statute) {
+      // Scroll inside the statute pane only, so the page itself does not jump.
+      var el = document.getElementById("prov-" + y.statute.provision);
+      var pane = document.getElementById("text-pane");
+      if (el && pane.scrollHeight > pane.clientHeight) pane.scrollTop = Math.max(0, el.offsetTop - 140);
+    }
+  }
+
+  document.getElementById("foot").textContent =
+    "Built " + D.generated + " with the U.S. Web Design System " + D.uswds + ". Spans marked by: " + D.extracted_by;
+  render(true);
+})();
+</script>
+<script src="assets/uswds/js/uswds.min.js"></script>
+</body>
+</html>
