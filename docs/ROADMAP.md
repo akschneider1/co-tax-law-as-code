@@ -12,6 +12,7 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 | LangExtract script (`tools/extract_langextract.py`) | Written, never run. Only its non-model parts were tested, with a stand-in for the library. |
 | `tools/textlib.py` (cross-references, context, parsers) | Written and sanity-checked. Not yet used by any other script. |
 | Everything under "Planned improvements" below | Not started, except `textlib.py`. |
+| "Proposed changes from the follow-up research" below | Proposed. Not started. |
 
 ### Known weaknesses
 
@@ -86,16 +87,80 @@ Read from two public repositories and one open Substack post. His "Policy as cod
 - Ingest Amendment 87's certified text once available: filing-status thresholds, indexing, income base.
 - Extend span marking to 39-22-123.5 (2.5) and (2.7).
 
+## Proposed changes from the follow-up research
+
+A second research pass on 11 November 2026 is written up in `docs/research/notes/stara_hsu_followup.md`. That session could reach GitHub and web search only, so the STARA papers and every Colorado government page are still unread. These are proposals. None is started, and the numbered items above are unchanged until they are accepted.
+
+### Corrections to the roadmap as written
+
+- **Item 10: do not use `lawscraper`.** It has no licence, scrapes Justia and FindLaw (unofficial mirrors), has no Colorado output, and its FindLaw parser keeps only the first paragraph of a section. Build ingestion on the legislature's own title files.
+- **Environment note on `lx.extract`: answered.** `additional_context` exists, as do `extraction_passes`, `max_workers` and `max_char_buffer` (read on `main`, not checked against the v1.7.2 tag).
+- **Item 5: `extraction_passes` is not consensus.** It merges passes with "first extraction wins for overlaps". A majority vote needs separate runs compared by our own code.
+- **Item 8: parallel workers already exist** in LangExtract (`max_workers`, `batch_length`). Nothing to build for the LangExtract path.
+- **STARA lessons: the published repositories hold no code or prompts.** Nothing can be reused; the method has to come from the paper.
+
+### Fix before the first LangExtract run
+
+A. **Set `max_char_buffer` above the longest provision.** The default of 1,000 characters splits longer provisions, and a span across the split is lost.
+B. **Use `char_interval`, not `text.find`,** in `keep_grounded`. `find` returns the first occurrence, so a second mark of a repeated phrase is dropped as an overlap.
+C. **Record `alignment_status` on every candidate** and accept `match_exact` only. Fuzzy alignment is on by default in the library.
+D. **Pass `additional_context`** from `textlib.context_for` (this is item 1; it is now known to be possible).
+
+### Accuracy
+
+E. **Treat the hand marks as a reference, not as truth.** STARA's benchmark reportedly found 135 of 181 apparent false positives were correct and missing from the human list. In `tools/evaluate.py` (item 3), a candidate span the hand marks lack goes to an adjudication list with three outcomes: model wrong, hand marks wrong, both defensible. Report precision before and after adjudication.
+F. **Keep the two example provisions out of the score.** They are shown to the model, so scoring them measures copying.
+G. **Measure run-to-run stability.** Run each provision three times and report the share of spans that appear in all three. Hsu's target for repeat-run agreement is above 0.95.
+H. **Tag each provision with the structural tasks it needs**: defined term, cross-reference, lead-in clause, amendment. Report accuracy by tag, so a failure points to missing context of a named kind.
+I. **Say in the prompt how to treat provisions limited to past tax years.** Most of our provisions are. STARA's benchmark counted unstated handling of expired provisions as a source of error.
+J. **Give every source a verification record.** Fields: `support_type` (quoted or paraphrased), `verifier_status` (unverified, verified, contradicted), `method`, `checked_on`. The validator fails an `agency_published` value whose agency source is not `verified`.
+K. **Snapshot agency pages.** Store the page text under `sources/<id>/` with `url`, `retrieved` and `sha256`, and have the validator confirm each recorded `quote` is in the stored text. Today the quotes are checked against nothing.
+L. **Decide a re-verification schedule.** A snapshot does not notice change. Suggested: re-read every agency source each January, when new forms are published, and after each legislative session.
+M. **Add a staleness class to each provision in the manifest**: active, partially amended, formally superseded, effectively dead, unknown. The four conflict provisions are "partially amended" now, and this replaces item 2's single flag with something the viewer can show.
+N. **Keep README claims no stronger than the checks.** Two of Hsu's repositories state more than their code tests. Add a short table to the README: each claim, and the script and check that enforces it.
+
+### Parameters to verify next (leads, not values)
+
+O. **2023 EITC share.** PolicyEngine records 50% and cites the 2023 104 Book, page 18. We record 25% from the snapshot alone. Read the booklet; if it says 50%, this is a fifth conflict.
+P. **EITC from 2027.** A search snippet of the Department of Revenue's EITC topics page reads "2026 and later: 25%". Read the page; it may close the 2027 gap.
+Q. **Amendment 87.** The final text and Blue Book are on the legislature's site. A snippet mentioning "$510,834" suggests the thresholds are indexed, which would make our round 2027 figures wrong for 2027.
+R. **HB24-1134.** It appears to hold the EITC trigger our snapshot lacks. Ingest it with item 6.
+S. **Cross-check against PolicyEngine in a script** (`tools/crosscheck_policyengine.py`) that fetches its two Colorado parameter files at run time and reports differences. Fetch, do not copy: PolicyEngine is AGPL-3.0.
+
+### Scalability
+
+T. **Item 7, specified.** Cache by provision hash, prompt hash and model. Add a replay mode that fails on a cache miss instead of calling a model, so a published run can be reproduced without a key. Pin the model id in the output file. Add a call budget.
+U. **Item 9, extended.** Add the columns `staleness_class`, `supersedes` and `superseded_by` to the inventory, and report the share of rows with no decision.
+
+### Usability
+
+V. **Item 12, specified.** Review states: `auto_ok`, `needs_review`, `accepted`, `rejected`, `modified`. Each record has `subject_id`, `state`, `from_state`, `reviewer`, `date`, `rationale`. Reviewer verdicts are final until the text hash changes. Anything a model produced starts at `needs_review`.
+W. **State the under-25 and ITIN limit in the README.** Colorado extends the credit to filers the federal credit excludes. A caller who passes the federal amount for such a filer gets the wrong result.
+X. **Item 13: one content store, two readers.** Hsu's FR 2052a site serves the same records as pages and through an `/llms.txt` index. A static `web/llms.txt` listing provisions, parameters and tests would do this with no server.
+
+### What not to adopt
+
+- **A typed-operation calculus for amendments.** Hsu's own held-out test found it no more accurate than a plain model; its value was auditability. With two sections ingested, the validator already gives us that.
+- **Model judges for our output.** Our checks are mechanical (verbatim, re-parse, source agreement). A judge would add a less reliable check on top of a more reliable one.
+
+### Suggested order
+
+1. A to D, then the first real LangExtract run with and without context (items 1 and 3, with E and F).
+2. O to R, which need a session that can reach `leg.colorado.gov` and `tax.colorado.gov`.
+3. J, K and M, which strengthen what is already recorded.
+4. Everything else.
+
 ## Open decisions
 
 - **Licence.** Settled: the repository is Apache 2.0 (`LICENSE`). USWDS files keep their own licences (`web/assets/uswds/LICENSE.md`).
 - **Governance.** Deferred. `docs/research/tradeoffs-report.md` covers stewardship models and precedents.
-- **Model provider** for LangExtract runs.
+- **Model provider** for LangExtract runs. LangExtract ships Gemini, OpenAI and Ollama providers. It has no Anthropic provider; Claude is reachable only through the community LiteLLM plugin.
 
 ## Research in this repository
 
 - `docs/research/tradeoffs-report.md`: the full tradeoffs report (structured text, parameters, engines, governance, sequencing after Amendment 87), with a section on what is unverified.
 - `docs/research/notes/`: the five sets of source notes behind it.
+- `docs/research/notes/stara_hsu_followup.md`: the follow-up to this roadmap's STARA and Hsu sections, with what was read and what could not be.
 
 ## Sources for this roadmap
 
