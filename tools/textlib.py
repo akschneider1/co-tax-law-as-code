@@ -4,9 +4,12 @@
   find_cross_refs      every cross-reference in a provision, resolved against
                        what has actually been ingested
   context_for          the surrounding material a reader (or a model) needs to
-                       understand one provision: heading, parents, references
-  parse_period / parse_percent   deterministic readers for date phrases and
-                       number words, used to re-check model and hand extractions
+                       understand one provision: heading, lead-ins, definitions,
+                       references and following provisos
+  parse_period / parse_percent / parse_dollars   deterministic readers for date
+                       phrases and number words, used to re-check model and
+                       hand extractions. Case does not matter: ballot measures
+                       print new text in capitals.
 """
 import datetime
 import hashlib
@@ -32,7 +35,7 @@ MONTHS = {
         ["January", "February", "March", "April", "May", "June", "July",
          "August", "September", "October", "November", "December"], start=1)
 }
-DATE = r"([A-Z][a-z]+) (\d{1,2}), (\d{4})"
+DATE = r"([A-Za-z]+) (\d{1,2}), (\d{4})"
 
 
 def content_hash(text):
@@ -41,21 +44,30 @@ def content_hash(text):
 
 # ---------------------------------------------------------------- parsers
 
+SCALES = {"thousand": 1000, "million": 1000000}
+
+
 def words_to_int(words):
-    total = 0
-    for token in words.replace("-", " ").split():
+    """'twenty-five' -> 25; 'seven hundred fifty thousand' -> 750000."""
+    total = current = 0
+    for token in words.lower().replace("-", " ").split():
         if token in UNITS:
-            total += UNITS[token]
+            current += UNITS[token]
         elif token in TENS:
-            total += TENS[token]
+            current += TENS[token]
+        elif token == "hundred":
+            current = (current or 1) * 100
+        elif token in SCALES:
+            total += (current or 1) * SCALES[token]
+            current = 0
         else:
             raise ValueError("unknown number word %r" % token)
-    return total
+    return total + current
 
 
 def parse_percent(text):
     """'twenty-five percent' -> 0.25; 'four and forty one-hundredths percent' -> 0.044."""
-    match = re.fullmatch(r"(.+?)(?: and (.+?) one-hundredths)? percent", text)
+    match = re.fullmatch(r"(.+?)(?: and (.+?) one-hundredths)? percent", text.lower())
     if not match:
         raise ValueError("not a percentage phrase: %r" % text)
     whole = Decimal(words_to_int(match.group(1)))
@@ -63,17 +75,27 @@ def parse_percent(text):
     return (whole + hundredths / 100) / 100
 
 
+def parse_dollars(text):
+    """'twenty five thousand dollars' -> 25000."""
+    match = re.fullmatch(r"(.+) dollars", text.lower())
+    if not match:
+        raise ValueError("not a dollar amount in words: %r" % text)
+    return words_to_int(match.group(1))
+
+
 def _date(groups):
     month, day, year = groups
-    return datetime.date(int(year), MONTHS[month], int(day))
+    if month.capitalize() not in MONTHS:
+        raise ValueError("unknown month %r" % month)
+    return datetime.date(int(year), MONTHS[month.capitalize()], int(day))
 
 
 def parse_period(text):
     """Return (from, to) as ISO strings or None, from the statute's date phrasing."""
     start = end = None
-    after = re.search(r"on or after " + DATE, text)
-    before = re.search(r"(?:before|prior to) " + DATE, text)
-    single = re.search(r"commencing on " + DATE, text)
+    after = re.search(r"on or after " + DATE, text, re.IGNORECASE)
+    before = re.search(r"(?:before|prior to) " + DATE, text, re.IGNORECASE)
+    single = re.search(r"commencing on " + DATE, text, re.IGNORECASE)
     if after:
         start = _date(after.groups())
     if before:
@@ -107,7 +129,12 @@ def load_sections():
                     "depth": depth,
                     "parent": parent_id,
                     "status": child.get("status"),
+                    # Set where a later instrument ends this provision's effect.
+                    "superseded_from": child.get("superseded-from"),
+                    "superseded_by": child.get("superseded-by"),
+                    "superseded_basis": child.get("superseded-basis"),
                     "text": text,
+                    "words": len(text.split()) if text else 0,
                     "sha256": content_hash(text) if text else None,
                     "spans": [],
                     "parameter": None,
@@ -117,6 +144,8 @@ def load_sections():
         walk(root, "", 0, None)
         sections.append({
             "id": root.get("id"),
+            # The enacted section a measure's proposed text would change, if any.
+            "amends": root.get("amends"),
             "citation": meta.findtext("citation"),
             "heading": meta.findtext("heading"),
             "source": dict(meta.find("source").attrib),
@@ -134,17 +163,18 @@ def index(sections):
 # ---------------------------------------------------------------- cross-references
 
 _PARENS = r"((?: ?\([0-9A-Za-z.]+\))*)"
-_CRS = re.compile(r"sections? (\d+-\d+(?:\.\d+)?-\d+(?:\.\d+)?)" + _PARENS)
-_IRC = re.compile(r"section (\d+[A-Za-z]?)" + _PARENS + r" of the internal revenue code")
+_CRS = re.compile(r"sections? (\d+-\d+(?:\.\d+)?-\d+(?:\.\d+)?)" + _PARENS, re.IGNORECASE)
+_IRC = re.compile(r"section (\d+[A-Za-z]?)" + _PARENS + r" of the internal revenue code", re.IGNORECASE)
 _GROUP = r"(?:\([0-9A-Za-z.]+\))+"
-_INTERNAL = re.compile(r"subsections? (" + _GROUP + r"(?:(?:, and |, or |, | and | or )" + _GROUP + r")*) of this section")
+_INTERNAL = re.compile(r"subsections? (" + _GROUP + r"(?:(?:, and |, or |, | and | or )" + _GROUP + r")*) of this section",
+                       re.IGNORECASE)
 
 
 def _path(parens):
     return "/".join(re.findall(r"\(([0-9A-Za-z.]+)\)", parens))
 
 
-def find_cross_refs(section_id, text, known_ids):
+def find_cross_refs(section_id, text, known_ids, amends=None):
     """Locate cross-references in one provision and say whether each target is ingested.
 
     status: 'ingested'      the target provision's text is in text/
@@ -173,8 +203,11 @@ def find_cross_refs(section_id, text, known_ids):
         add(match.start(), match.start() + len(match.group(0).rstrip()), target, "crs")
     for match in _INTERNAL.finditer(text):
         for group in re.finditer(_GROUP, match.group(1)):
-            add(match.start(1) + group.start(), match.start(1) + group.end(),
-                section_id + "/" + _path(group.group(0)), "internal")
+            target = section_id + "/" + _path(group.group(0))
+            if target not in known_ids and amends and amends + "/" + _path(group.group(0)) in known_ids:
+                # A measure's "this section" is the enacted section it amends.
+                target = amends + "/" + _path(group.group(0))
+            add(match.start(1) + group.start(), match.start(1) + group.end(), target, "internal")
     refs.sort(key=lambda r: r["start"])
     return refs
 
@@ -184,19 +217,45 @@ def attach_cross_refs(sections):
     known = set(index(sections))
     for section in sections:
         for provision in section["provisions"]:
-            provision["refs"] = (find_cross_refs(section["id"], provision["text"], known)
+            provision["refs"] = (find_cross_refs(section["id"], provision["text"], known, section.get("amends"))
                                  if provision["text"] else [])
     return sections
 
 
 # ---------------------------------------------------------------- context
 
-def context_for(provision_id, sections):
-    """Plain-text context for one provision: where it sits and what it points to.
+_DEFINITION = re.compile(r"[\"\u201c]([^\"\u201d]{2,60})[\"\u201d],? (?:means|has the same meaning|includes)")
+_PROVISO = re.compile(r"\bthis (?:sub)?section\b|\bprovided, that\b|\bnotwithstanding\b", re.IGNORECASE)
 
-    STARA's published ablation found that attaching this kind of context
-    (headings, parent provisions, cross-referenced text) was the largest single
-    gain in extraction accuracy, so it is sent to the model with every provision.
+
+def find_definitions(sections):
+    """Terms defined in the ingested text: [(term, defining provision id, text)].
+
+    Only quoted terms followed by 'means', 'includes' or 'has the same meaning'
+    are found. A definition's scope ('as used in this section') is not parsed;
+    context_for limits each definition to the section that contains it.
+    """
+    found = []
+    for section in sections:
+        for provision in section["provisions"]:
+            for match in _DEFINITION.finditer(provision["text"] or ""):
+                found.append((match.group(1), provision["id"], provision["text"]))
+    return found
+
+
+def context_for(provision_id, sections):
+    """Plain-text context for one provision, so it can be read on its own.
+
+    Follows the four kinds of context STARA attaches to each unit (Surani et
+    al., ICAIL 2025, section 3.1), which its ablation found to be the largest
+    single gain in extraction accuracy:
+      1. a heading: citation and position
+      2. lead-ins: the text of parent provisions that this one completes
+      3. definitions of quoted terms used in the provision, if the same
+         section defines them
+      4. provisos: later sibling provisions that modify this one, such as a
+         repeal clause
+    Cross-referenced text is added too, or a warning where it was not read.
     """
     by_id = index(sections)
     section = next(s for s in sections if provision_id.startswith(s["id"] + "/"))
@@ -210,7 +269,22 @@ def context_for(provision_id, sections):
             parents.append("%s %s" % (by_id[parent]["label"], by_id[parent]["text"]))
         parent = by_id[parent]["parent"]
     for line in reversed(parents):
-        lines.append("Parent provision: " + line)
+        lines.append("Lead-in from parent provision: " + line)
+
+    text = provision["text"] or ""
+    for term, where, definition in find_definitions([section]):
+        if where != provision_id and term.lower() in text.lower():
+            lines.append("Definition of \"%s\" (%s): %s" % (term, by_id[where]["label"], definition))
+
+    siblings = [p for p in section["provisions"] if p["parent"] == provision["parent"]]
+    position = siblings.index(provision)
+    for later in siblings[position + 1:]:
+        if later["text"] and later["words"] <= 60 and _PROVISO.search(later["text"]):
+            lines.append("Following provision %s: %s" % (later["label"], later["text"]))
+
+    if provision.get("superseded_from"):
+        lines.append("Note: this provision's effect ends before %s (%s)."
+                     % (provision["superseded_from"], provision.get("superseded_basis") or "basis not recorded"))
 
     for ref in provision.get("refs", []):
         if ref["status"] == "ingested" and by_id[ref["target"]]["text"]:

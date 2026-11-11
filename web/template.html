@@ -16,6 +16,8 @@
 .sp-who { background: #ede3ff; color: #54278f; }
 .sp-exception { background: #f8dfe2; color: #8b0a03; }
 .sp-effect { background: #ccecf2; color: #0e4f5c; }
+.sp-threshold { background: #ffe6cf; color: #5f3a12; }
+.prov.superseded .label::after { content: " (ends before 2027 if Amendment 87 takes effect)"; font-weight: 400; font-style: italic; }
 .legend .sp { font-size: .82rem; margin-right: 4px; }
 .prov { padding: 6px 10px; border-left: 4px solid transparent; margin-left: calc(var(--depth) * 16px); line-height: 1.6; }
 .prov.clickable { cursor: pointer; }
@@ -111,10 +113,20 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
     }
     return pct(v);
   }
+  function canon(v) {
+    if (!Array.isArray(v)) v = [{ over: "0", rate: v }];
+    return JSON.stringify(v.map(function (b) { return [parseFloat(b.over), parseFloat(b.rate)]; }));
+  }
   function sameAsStatute(y) {
     if (!y.statute || y.used == null) return false;
-    if (Array.isArray(y.used)) return y.used.length === 1 && parseFloat(y.used[0].rate) === parseFloat(y.statute.value);
-    return parseFloat(y.used) === parseFloat(y.statute.value);
+    return canon(y.used) === canon(y.statute.value);
+  }
+  function dollars(n) { return "$" + Number(n).toLocaleString("en-US"); }
+  function spanMeaning(s) {
+    if (s.class === "period") return period(s.normalized);
+    if (s.class === "value") return pct(s.normalized);
+    if (s.class === "threshold") return dollars(s.normalized);
+    return null;
   }
   function period(n) {
     var a = n.from ? n.from.slice(0, 4) : null, b = n.to ? n.to.slice(0, 4) : null;
@@ -165,7 +177,7 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
 
     pane.appendChild(h("h3", { class: "font-heading-md margin-bottom-05" }, section.citation));
     pane.appendChild(h("p", { class: "text-base-dark font-body-xs margin-top-0" }, section.heading));
-    var note = h("span", null, h("strong", null, "Unofficial copy. "), "Read from ",
+    var note = h("span", null, h("strong", null, section.amends ? "Ballot measure text, not enacted statute. " : "Unofficial copy. "), "Read from ",
       h("a", { class: "usa-link usa-link--external", href: section.source.url, target: "_blank", rel: "noopener" }, section.source.publisher),
       " on " + section.source.retrieved + ". " + section.note);
     pane.appendChild(warning(note));
@@ -179,7 +191,8 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
     var list = h("div", { class: focusId && findProvision(focusId).section.id === section.id ? "has-focus" : "" });
     section.provisions.forEach(function (p) {
       var isFocus = p.id === focusId;
-      var cls = "prov" + (isFocus ? " focus" : "") + (p.status === "repealed" ? " repealed" : "") + (p.parameter ? " clickable" : "");
+      var cls = "prov" + (isFocus ? " focus" : "") + (p.status === "repealed" ? " repealed" : "") +
+        (p.superseded_from ? " superseded" : "") + (p.parameter ? " clickable" : "");
       var row = h("div", { class: cls, style: "--depth:" + p.depth, id: "prov-" + p.id });
       row.appendChild(h("span", { class: "label" }, p.label));
       if (p.status === "repealed") row.appendChild(document.createTextNode("Repealed."));
@@ -187,12 +200,13 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
         var pos = 0;
         p.spans.forEach(function (s, i) {
           if (s.start > pos) row.appendChild(document.createTextNode(p.text.slice(pos, s.start)));
-          var hot = isFocus && (i === y.statute.period_span || i === y.statute.value_span);
+          var schedule = isFocus && Array.isArray(y.statute.value);
+          var hot = isFocus && (i === y.statute.period_span || i === y.statute.value_span ||
+            (schedule && (s.class === "value" || s.class === "threshold")));
           var tip = D.classes[s.class];
-          if (s.class === "period") tip += ": " + period(s.normalized);
-          if (s.class === "value") tip += ": " + pct(s.normalized);
+          if (spanMeaning(s)) tip += ": " + spanMeaning(s);
           row.appendChild(h("mark", { class: "sp sp-" + s.class + (hot ? " hot" : ""), title: tip }, p.text.slice(s.start, s.end)));
-          if (hot) row.appendChild(h("span", { class: "derived" }, s.class === "period" ? period(s.normalized) : pct(s.normalized)));
+          if (hot) row.appendChild(h("span", { class: "derived" }, spanMeaning(s)));
           pos = s.end;
         });
         if (pos < p.text.length) row.appendChild(document.createTextNode(p.text.slice(pos)));
@@ -225,7 +239,7 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
       body.appendChild(h("tr", { class: r.year === state.year ? "selected" : "" },
         h("th", { scope: "row" }, h("button", { type: "button", class: "usa-button usa-button--unstyled",
           "aria-pressed": String(r.year === state.year), onclick: function () { state.year = r.year; render(true); } }, String(r.year))),
-        h("td", null, r.statute ? pct(r.statute.value) : "None"),
+        h("td", null, r.statute ? usedLabel(r.statute.value) : "None"),
         h("td", { class: differs ? "text-bold" : "" }, usedLabel(r.used) + (differs && r.used != null ? " (differs)" : "")),
         h("td", null, tag(r.status))));
     });
@@ -252,10 +266,18 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
         var line = h("div", null, "“" + found.provision.text.slice(s.start, s.end) + "”");
         if (s.class === "period") line.appendChild(h("span", { class: "arrow" }, " → " + period(s.normalized) + (other ? " (not this year)" : "")));
         if (s.class === "value") line.appendChild(h("span", { class: "arrow" }, " → " + pct(s.normalized)));
+        if (s.class === "threshold") line.appendChild(h("span", { class: "arrow" }, " → " + dollars(s.normalized)));
         spans.appendChild(h("li", { class: other ? "other" : "" }, h("span", { class: "sp sp-" + s.class }, s.class), line));
       });
-      step("Marked spans", h("p", { class: "margin-top-05 text-base-dark" }, "Dates and number words are re-parsed by code and checked against the text."), spans);
-      step("What the text alone gives", h("p", { class: "margin-top-05" }, h("span", { class: "big" }, pct(y.statute.value)), "for tax year " + y.year));
+      var lead = null;
+      if (y.statute.period_span < 0 && y.statute.period_provision) {
+        var owner = findProvision(y.statute.period_provision);
+        lead = h("p", { class: "margin-top-05 text-base-dark" }, "The tax years are marked in the lead-in, " +
+          owner.section.citation + owner.provision.label + ".");
+      }
+      step("Marked spans", h("p", { class: "margin-top-05 text-base-dark" }, "Dates and number words are re-parsed by code and checked against the text."), spans, lead);
+      step("What the text alone gives", h("p", { class: "margin-top-05" }, h("span", { class: "big" }, usedLabel(y.statute.value)), "for tax year " + y.year),
+        Array.isArray(y.statute.value) ? h("p", { class: "margin-top-05 text-base-dark" }, "The rates, lowest first, are paired with zero and each marked threshold, lowest first.") : null);
     } else {
       step("Statute text", h("p", { class: "margin-top-05" }, "No ingested provision covers tax year " + y.year + "."));
     }
@@ -266,6 +288,8 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
       others.appendChild(h("p", { class: "margin-bottom-05" }, s.publisher + (s.states ? " states " + usedLabel(s.states) + ". " : ". "),
         h("a", { class: "usa-link usa-link--external", href: s.url, target: "_blank", rel: "noopener" }, "Source")));
       others.appendChild(h("blockquote", { class: "border-left-05 border-base-light padding-left-2 margin-x-0 margin-y-1 font-body-xs" }, s.quote || s.summary));
+      others.appendChild(h("p", { class: "font-body-3xs text-base-dark margin-top-0" }, s.snapshot ?
+        "Quote checked against a stored copy of the source, read " + s.retrieved + "." : "Not checked against a stored copy."));
     });
     step("Other sources", others);
 
@@ -279,7 +303,8 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
       used.appendChild(ul);
     }
     var why = y.conflict_note || y.caveat || (y.used == null ? p.gaps.join(" ") : null);
-    step("Value used", used, why ? warning(why) : null);
+    step("Value used", used, why ? warning(why) : null,
+      y.snapshot_only ? warning("This value rests on the statute snapshot alone. The snapshot is known to be out of date: five of its values differ from what the Department of Revenue publishes.") : null);
 
     var rl = h("div", { class: "margin-top-05" });
     D.rules.filter(function (r) { return r.parameters.indexOf(p.id) >= 0; }).forEach(function (r) {

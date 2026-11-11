@@ -15,9 +15,7 @@ or any parameter's statute claim is not supported by an extraction.
 import datetime
 import json
 import pathlib
-import re
 import sys
-import xml.etree.ElementTree as ET
 from decimal import Decimal
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -25,70 +23,10 @@ sys.path.insert(0, str(ROOT))
 
 import engine.co_rules  # noqa: E402,F401  (registers the rules)
 from engine.core import RULES, Parameters  # noqa: E402
+from tools.textlib import (  # noqa: E402
+    attach_cross_refs, load_sections, parse_dollars, parse_percent, parse_period)
 
 YEARS = range(2022, 2028)
-
-UNITS = {
-    "zero": 0, "one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6,
-    "seven": 7, "eight": 8, "nine": 9, "ten": 10, "eleven": 11, "twelve": 12,
-    "thirteen": 13, "fourteen": 14, "fifteen": 15, "sixteen": 16,
-    "seventeen": 17, "eighteen": 18, "nineteen": 19,
-}
-TENS = {
-    "twenty": 20, "thirty": 30, "forty": 40, "fifty": 50, "sixty": 60,
-    "seventy": 70, "eighty": 80, "ninety": 90,
-}
-MONTHS = {
-    name: number for number, name in enumerate(
-        ["January", "February", "March", "April", "May", "June", "July",
-         "August", "September", "October", "November", "December"], start=1)
-}
-DATE = r"([A-Z][a-z]+) (\d{1,2}), (\d{4})"
-
-
-def words_to_int(words):
-    total = 0
-    for token in words.replace("-", " ").split():
-        if token in UNITS:
-            total += UNITS[token]
-        elif token in TENS:
-            total += TENS[token]
-        else:
-            raise ValueError("unknown number word %r" % token)
-    return total
-
-
-def parse_percent(text):
-    """'twenty-five percent' -> 0.25; 'four and forty one-hundredths percent' -> 0.044."""
-    match = re.fullmatch(r"(.+?)(?: and (.+?) one-hundredths)? percent", text)
-    if not match:
-        raise ValueError("not a percentage phrase: %r" % text)
-    whole = Decimal(words_to_int(match.group(1)))
-    hundredths = Decimal(words_to_int(match.group(2))) if match.group(2) else Decimal(0)
-    return (whole + hundredths / 100) / 100
-
-
-def to_date(match_groups):
-    month, day, year = match_groups
-    return datetime.date(int(year), MONTHS[month], int(day))
-
-
-def parse_period(text):
-    """Return (from, to) as ISO strings or None, from the statute's date phrasing."""
-    start = end = None
-    after = re.search(r"on or after " + DATE, text)
-    before = re.search(r"(?:before|prior to) " + DATE, text)
-    single = re.search(r"commencing on " + DATE, text)
-    if after:
-        start = to_date(after.groups())
-    if before:
-        end = to_date(before.groups()) - datetime.timedelta(days=1)
-    if single and not after and not before:
-        start = to_date(single.groups())
-        end = datetime.date(start.year, 12, 31)
-    if start is None and end is None:
-        raise ValueError("no date phrase recognised in %r" % text)
-    return (start.isoformat() if start else None, end.isoformat() if end else None)
 
 
 def covers(period, day):
@@ -96,50 +34,18 @@ def covers(period, day):
     return (start is None or start <= day) and (end is None or day <= end)
 
 
-def load_sections():
-    sections = []
-    for path in sorted((ROOT / "text").glob("*.xml")):
-        root = ET.parse(str(path)).getroot()
-        meta = root.find("meta")
-        provisions = []
-
-        def walk(element, label, depth):
-            for child in element.findall("provision"):
-                child_label = label + child.get("num")
-                content = child.find("content")
-                provisions.append({
-                    "id": child.get("id"),
-                    "label": child_label,
-                    "depth": depth,
-                    "status": child.get("status"),
-                    "text": " ".join(content.text.split()) if content is not None else None,
-                    "spans": [],
-                    "parameter": None,
-                })
-                walk(child, child_label, depth + 1)
-
-        walk(root, "", 0)
-        sections.append({
-            "id": root.get("id"),
-            "citation": meta.findtext("citation"),
-            "heading": meta.findtext("heading"),
-            "source": dict(meta.find("source").attrib),
-            "authority": meta.findtext("authority"),
-            "note": meta.findtext("note"),
-            "provisions": provisions,
-        })
-    return sections
-
-
 def ground(sections, extractions, errors):
     """Steps 1 and 2. Attach located, checked spans to their provisions."""
     by_id = {p["id"]: p for s in sections for p in s["provisions"]}
+    for provision in by_id.values():
+        provision["derive"] = None
     for group in extractions["groups"]:
         provision = by_id.get(group["provision"])
         if provision is None or provision["text"] is None:
             errors.append("extraction targets unknown or empty provision %s" % group["provision"])
             continue
         provision["parameter"] = group["parameter"]
+        provision["derive"] = group.get("derive")
         taken = []
         for span in group["spans"]:
             start = provision["text"].find(span["text"])
@@ -167,11 +73,47 @@ def ground(sections, extractions, errors):
                     if parsed != Decimal(span["normalized"]):
                         errors.append("value mismatch in %s: text parses to %s, extraction says %s"
                                       % (group["provision"], parsed, span["normalized"]))
+                elif span["class"] == "threshold":
+                    parsed = parse_dollars(span["text"])
+                    record["normalized"] = str(parsed)
+                    if parsed != int(span["normalized"]):
+                        errors.append("threshold mismatch in %s: text parses to %s, extraction says %s"
+                                      % (group["provision"], parsed, span["normalized"]))
             except ValueError as exc:
                 errors.append("%s: %s" % (group["provision"], exc))
             provision["spans"].append(record)
         provision["spans"].sort(key=lambda s: s["start"])
     return by_id
+
+
+def periods_for(provision, by_id):
+    """Period spans that govern a provision: its own, or the nearest ancestor's.
+
+    A list item often carries the number while the lead-in above it carries
+    the dates. Returns (owning provision id, [(span index, span)]).
+    """
+    current = provision
+    while current is not None:
+        found = [(i, s) for i, s in enumerate(current["spans"]) if s["class"] == "period"]
+        if found:
+            return current["id"], found
+        current = by_id.get(current["parent"]) if current["parent"] else None
+    return None, []
+
+
+def schedule_from(provision):
+    """A bracket schedule from one provision's marked rates and thresholds.
+
+    Used only where the extraction group says "derive": "schedule". It relies
+    on the schedule being graduated: the rates, in ascending order, are paired
+    with zero and then each distinct threshold, in ascending order. Returns
+    None if the counts do not fit.
+    """
+    rates = sorted({Decimal(s["normalized"]) for s in provision["spans"] if s["class"] == "value"})
+    floors = [0] + sorted({int(s["normalized"]) for s in provision["spans"] if s["class"] == "threshold"})
+    if len(rates) != len(floors):
+        return None
+    return [{"over": str(floor), "rate": str(rate)} for floor, rate in zip(floors, rates)]
 
 
 def statute_value(by_id, parameter_id, day):
@@ -180,27 +122,38 @@ def statute_value(by_id, parameter_id, day):
     for provision in by_id.values():
         if provision["parameter"] != parameter_id:
             continue
+        if provision.get("superseded_from") and day >= provision["superseded_from"]:
+            continue
         values = [i for i, s in enumerate(provision["spans"]) if s["class"] == "value"]
-        for index, span in enumerate(provision["spans"]):
-            if span["class"] != "period" or not values:
+        if not values:
+            continue
+        if provision.get("derive") == "schedule":
+            value = schedule_from(provision)
+            if value is None:
                 continue
+        else:
+            value = provision["spans"][values[0]]["normalized"]
+        owner, periods = periods_for(provision, by_id)
+        for index, span in periods:
             period = (span["normalized"]["from"], span["normalized"]["to"])
             if covers(period, day):
                 hits.append({
                     "provision": provision["id"],
                     "label": provision["label"],
-                    "value": provision["spans"][values[0]]["normalized"],
-                    "period_span": index,
+                    "value": value,
+                    # -1 where the dates are marked in a parent provision.
+                    "period_span": index if owner == provision["id"] else -1,
+                    "period_provision": owner,
                     "value_span": values[0],
                 })
     return hits
 
 
-def as_rate(value):
-    """A one-bracket schedule and a plain rate are the same statute claim."""
+def canonical(value):
+    """A comparable form: a plain rate and a one-bracket schedule are the same claim."""
     if isinstance(value, list):
-        return Decimal(value[0]["rate"]) if len(value) == 1 else None
-    return Decimal(value)
+        return tuple((Decimal(b["over"]), Decimal(b["rate"])) for b in value)
+    return ((Decimal(0), Decimal(value)),)
 
 
 def build_parameters(parameters, by_id, errors):
@@ -209,11 +162,11 @@ def build_parameters(parameters, by_id, errors):
         # Step 4: every statute claim in the parameter file must be grounded.
         for entry in data["values"]:
             for source in entry["sources"]:
-                if source["kind"] != "statute":
+                if "ref" not in source:
                     continue
                 hits = statute_value(by_id, pid, entry["effective_from"])
                 match = [h for h in hits if h["provision"] == source["ref"]
-                         and Decimal(h["value"]) == as_rate(source["states"])]
+                         and canonical(h["value"]) == canonical(source["states"])]
                 if not match:
                     errors.append("%s from %s: statute claim %s = %s is not supported by any extraction"
                                   % (pid, entry["effective_from"], source["ref"], json.dumps(source["states"])))
@@ -222,7 +175,7 @@ def build_parameters(parameters, by_id, errors):
         for year in YEARS:
             day = "%d-01-01" % year
             hits = statute_value(by_id, pid, day)
-            if len({h["value"] for h in hits}) > 1:
+            if len({canonical(h["value"]) for h in hits}) > 1:
                 errors.append("%s %d: provisions disagree: %s" % (pid, year, [h["provision"] for h in hits]))
             entry = next((e for e in data["values"]
                           if e["effective_from"] <= day and (e.get("effective_to") is None or day <= e["effective_to"])), None)
@@ -232,6 +185,7 @@ def build_parameters(parameters, by_id, errors):
                 "used": entry["value"] if entry else None,
                 "status": entry["status"] if entry else "not_recorded",
                 "other_sources": [s for s in entry["sources"] if s["kind"] != "statute"] if entry else [],
+                "snapshot_only": bool(entry) and entry["status"] in ("statute_snapshot", "statutory_default"),
                 "conflict_note": entry.get("conflict_note") if entry else None,
                 "caveat": entry.get("caveat") if entry else None,
             })
@@ -247,7 +201,7 @@ def build_parameters(parameters, by_id, errors):
 
 def main():
     errors = []
-    sections = load_sections()
+    sections = attach_cross_refs(load_sections())
     source = ROOT / "extractions" / "extractions.json"
     if "--extractions" in sys.argv:
         source = pathlib.Path(sys.argv[sys.argv.index("--extractions") + 1]).resolve()

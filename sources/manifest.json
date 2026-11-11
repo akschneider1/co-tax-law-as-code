@@ -1,0 +1,92 @@
+{
+  "co-2026-amendment-87-blue-book": {
+    "converted_with": "pdftotext -layout",
+    "original_sha256": "57fb6e938fc3804f1ee0e089124a9b4e380ae5f77bdbefbdbfd89ec78a591d22",
+    "original_type": "pdf",
+    "publisher": "Colorado Legislative Council Staff",
+    "retrieved": "2026-11-11",
+    "text_sha256": "8dc88d9e944f64bddecaa00bbfef9ae154c390cf8761ee2112b7f421d9316878",
+    "title": "2026 Blue Book, Amendment 87: Graduated Income Tax",
+    "url": "https://leg.colorado.gov/ballots/graduated-income-tax-2/files/blue-book"
+  },
+  "co-2026-amendment-87-text": {
+    "converted_with": "pdftotext -layout",
+    "original_sha256": "d08086dae40c7ba3ba70ae265a097976d42e7c0ab1235f0bf2940d10cdb36802",
+    "original_type": "pdf",
+    "publisher": "Colorado Legislative Council Staff",
+    "retrieved": "2026-11-11",
+    "text_sha256": "f2554610d2d6dbc52f4aefc2a1b8d5b16c16eb8c5de68726e6f71d36104d8305",
+    "title": "Initiative 2025-2026 #195 (Amendment 87), final text",
+    "url": "https://leg.colorado.gov/ballots/graduated-income-tax-2/files/text-of-measure"
+  },
+  "dor-104-book-2022": {
+    "converted_with": "pdftotext -layout",
+    "original_sha256": "c7e813591fbea7d5b7930649a4d8e8f175263d995a492cc0e33ba938fee5647f",
+    "original_type": "pdf",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "cab3d4df244d4227464894eecc5b2ffa5c5dae4d86fc1ff28cf26f3f4d1093af",
+    "title": "2022 Colorado Individual Income Tax Filing Guide (104 Book)",
+    "url": "https://tax.colorado.gov/sites/tax/files/documents/DR_104_Book_2022.pdf"
+  },
+  "dor-104-book-2023": {
+    "converted_with": "pdftotext -layout",
+    "original_sha256": "7f9f50ce9ce9e5552cd7e6e6454e1e25fca0bfbfb7226e2e12cf4f0bc5680d5c",
+    "original_type": "pdf",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "47e8870b83343ab3eb8d6edefc7edb891387623731e0b9f3b4b1fa57b7a3f60c",
+    "title": "2023 Colorado Individual Income Tax Filing Guide (104 Book)",
+    "url": "https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf"
+  },
+  "dor-104-book-2024": {
+    "converted_with": "pdftotext -layout",
+    "original_sha256": "64e7f9a6093901466419a3ed75413ed1b1eb559e931a5e056aa73520c7abd1b6",
+    "original_type": "pdf",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "a83d3e31747e211b6e7cd82eeaccb1677d9f7c489a94e84cbd21011038e36c58",
+    "title": "2024 Colorado Individual Income Tax Filing Guide (104 Book)",
+    "url": "https://tax.colorado.gov/sites/tax/files/documents/DR0104_book_2024.pdf"
+  },
+  "dor-104-book-2025": {
+    "converted_with": "pdftotext -layout",
+    "original_sha256": "69c80c89118eccd21dc18e564237539e647c623a361a7f0beebed99ef5b0c7f8",
+    "original_type": "pdf",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "cab7e8e683d4e7fd77e74ec35d9c0cfedf83811d790eb9baef0545b4d5307921",
+    "title": "2025 Colorado Individual Income Tax Filing Guide (104 Book)",
+    "url": "https://tax.colorado.gov/sites/tax/files/documents/Book104_2025.pdf"
+  },
+  "dor-ctc-eitc": {
+    "converted_with": "tools/snapshot_source.py html_to_text",
+    "original_sha256": "741d18530963bf400d46b7dea0c880757050ba5ed41f2e56f4138a9d5d348c35",
+    "original_type": "html",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "523692fd9e783fd6175ef92eca33c1a9977e0150dd3f46a48f85eae7e483ac5b",
+    "title": "Child Tax Credit and Earned Income Tax Credit",
+    "url": "https://tax.colorado.gov/CTC-EITC"
+  },
+  "dor-eitc-topics": {
+    "converted_with": "tools/snapshot_source.py html_to_text",
+    "original_sha256": "6d9f49286f7767fa193909c073824170ca3989142302fc5a8dd6de5abb1a687e",
+    "original_type": "html",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "eb60aae5b10809210a4ee13fb9b1564bbb5a2df7f8901514a608dd069e6e6390",
+    "title": "Income Tax Topics: Earned Income Tax Credit",
+    "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit"
+  },
+  "dor-individual-income-tax-guide": {
+    "converted_with": "tools/snapshot_source.py html_to_text",
+    "original_sha256": "882d3b05e2c6935a2178d04cb6ff2f30ccc42b00e9ef340970aca7c59820237f",
+    "original_type": "html",
+    "publisher": "Colorado Department of Revenue",
+    "retrieved": "2026-11-11",
+    "text_sha256": "0ca99e4d8ab4509820c402ea5951ddff8d8f82ae7a8000b8c3e43a357061ba77",
+    "title": "Individual Income Tax Guide",
+    "url": "https://tax.colorado.gov/individual-income-tax-guide"
+  }
+}

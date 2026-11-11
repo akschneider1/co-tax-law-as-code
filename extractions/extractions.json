@@ -7,7 +7,8 @@
     "base": "What the number is applied to",
     "who": "Who the provision applies to",
     "exception": "A cross-reference that can displace the provision",
-    "effect": "A consequence other than a number"
+    "effect": "A consequence other than a number",
+    "threshold": "An income amount where a rate starts or stops"
   },
   "groups": [
     {
@@ -89,6 +90,44 @@
       "spans": [
         {"class": "base", "text": "The amount of the credit allowed under this section that exceeds the resident individual’s income taxes due"},
         {"class": "effect", "text": "is refunded to the individual"}
+      ]
+    },
+    {
+      "provision": "/us/co/measure/2026/amendment-87/39-22-104/1.8/a",
+      "parameter": "co.income_tax.rate_schedule",
+      "spans": [
+        {"class": "exception", "text": "EXCEPT AS OTHERWISE PROVIDED IN SECTION 39-22-627"},
+        {"class": "exception", "text": "SUBJECT TO SUBSECTION (2) OF THIS SECTION"},
+        {"class": "period", "text": "ON OR AFTER JANUARY 1, 2027", "normalized": {"from": "2027-01-01", "to": null}},
+        {"class": "base", "text": "FEDERAL TAXABLE INCOME, AS DETERMINED BY SECTION 63 OF THE INTERNAL REVENUE CODE"},
+        {"class": "who", "text": "EVERY INDIVIDUAL, ESTATE, AND TRUST"}
+      ]
+    },
+    {
+      "provision": "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/VI",
+      "parameter": "co.income_tax.rate_schedule",
+      "derive": "schedule",
+      "note": "The last list item restates every bracket. Each rate and each threshold is marked once, at its first appearance. The tax years are marked in the lead-in, (1.8)(a).",
+      "spans": [
+        {"class": "threshold", "text": "ONE MILLION DOLLARS", "normalized": "1000000"},
+        {"class": "value", "text": "THREE AND SEVENTY ONE-HUNDREDTHS PERCENT", "normalized": "0.037"},
+        {"class": "threshold", "text": "TWENTY FIVE THOUSAND DOLLARS", "normalized": "25000"},
+        {"class": "value", "text": "FOUR AND TWENTY ONE-HUNDREDTHS PERCENT", "normalized": "0.042"},
+        {"class": "threshold", "text": "ONE HUNDRED THOUSAND DOLLARS", "normalized": "100000"},
+        {"class": "value", "text": "FOUR AND FORTY ONE-HUNDREDTHS PERCENT", "normalized": "0.044"},
+        {"class": "threshold", "text": "FIVE HUNDRED THOUSAND DOLLARS", "normalized": "500000"},
+        {"class": "value", "text": "SEVEN AND FORTY ONE-HUNDREDTHS PERCENT", "normalized": "0.074"},
+        {"class": "threshold", "text": "SEVEN HUNDRED FIFTY THOUSAND DOLLARS", "normalized": "750000"},
+        {"class": "value", "text": "SEVEN AND NINETY ONE-HUNDREDTHS PERCENT", "normalized": "0.079"},
+        {"class": "value", "text": "EIGHT AND FORTY ONE-HUNDREDTHS PERCENT", "normalized": "0.084"}
+      ]
+    },
+    {
+      "provision": "/us/co/measure/2026/amendment-87/39-22-104/1.8/b",
+      "parameter": null,
+      "spans": [
+        {"class": "base", "text": "TAXABLE NET INCOME FROM THE SALE OR EXCHANGE OF A PRINCIPAL RESIDENCE EXCEEDING THE AMOUNT EXCLUDED FROM FEDERAL TAXABLE INCOME UNDER SECTION 121 OF THE INTERNAL REVENUE CODE"},
+        {"class": "value", "text": "FOUR AND FORTY ONE-HUNDREDTHS PERCENT", "normalized": "0.044"}
       ]
     }
   ]

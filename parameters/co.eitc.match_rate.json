@@ -11,7 +11,7 @@
       "status": "agency_published",
       "sources": [
         {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/b", "states": "0.20"},
-        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Income Tax Topics: Earned Income Tax Credit", "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit", "locator": "Credit Percentages table", "quote": "2022 20%", "retrieved": "2026-11-11", "states": "0.20"}
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Income Tax Topics: Earned Income Tax Credit", "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit", "snapshot": "dor-eitc-topics", "locator": "Credit Percentages table", "quote": "2022 20%", "retrieved": "2026-11-11", "states": "0.20"}
       ]
     },
     {
@@ -21,8 +21,8 @@
       "status": "agency_published",
       "sources": [
         {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/c/I", "states": "0.25"},
-        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Income Tax Topics: Earned Income Tax Credit", "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit", "locator": "Credit Percentages table", "quote": "2023 50%", "retrieved": "2026-11-11", "states": "0.50"},
-        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2023 Colorado Individual Income Tax Filing Guide (104 Book), form DR 0104CR", "url": "https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf", "locator": "DR 0104CR, earned income tax credit table, line 5", "quote": "COEITC, multiply line 4 by 50% (0.50).", "retrieved": "2026-11-11", "sha256": "7f9f50ce9ce9e5552cd7e6e6454e1e25fca0bfbfb7226e2e12cf4f0bc5680d5c", "states": "0.50"}
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Income Tax Topics: Earned Income Tax Credit", "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit", "snapshot": "dor-eitc-topics", "locator": "Credit Percentages table", "quote": "2023 50%", "retrieved": "2026-11-11", "states": "0.50"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2023 Colorado Individual Income Tax Filing Guide (104 Book), form DR 0104CR", "url": "https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf", "snapshot": "dor-104-book-2023", "locator": "DR 0104CR, earned income tax credit table, line 5", "quote": "COEITC, multiply line 4 by 50% (0.50).", "retrieved": "2026-11-11", "sha256": "7f9f50ce9ce9e5552cd7e6e6454e1e25fca0bfbfb7226e2e12cf4f0bc5680d5c", "states": "0.50"}
       ],
       "conflict_note": "The ingested statute snapshot says 25% for 2023; the Department of Revenue's 2023 form and its credit percentage table both say 50%. The agency value is used. Same cause as the 2024 conflict: the snapshot omits a later amendment, which has not been ingested. Until 2026-11-11 this repository recorded 25% from the snapshot alone."
     },
@@ -36,7 +36,7 @@
         {
           "kind": "agency",
           "publisher": "Colorado Department of Revenue",
-          "url": "https://tax.colorado.gov/CTC-EITC",
+          "url": "https://tax.colorado.gov/CTC-EITC", "snapshot": "dor-ctc-eitc",
           "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.",
           "retrieved": "2026-11-11",
           "states": "0.50"
@@ -54,7 +54,7 @@
         {
           "kind": "agency",
           "publisher": "Colorado Department of Revenue",
-          "url": "https://tax.colorado.gov/CTC-EITC",
+          "url": "https://tax.colorado.gov/CTC-EITC", "snapshot": "dor-ctc-eitc",
           "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.",
           "retrieved": "2026-11-11",
           "states": "0.50"
@@ -72,7 +72,7 @@
         {
           "kind": "agency",
           "publisher": "Colorado Department of Revenue",
-          "url": "https://tax.colorado.gov/CTC-EITC",
+          "url": "https://tax.colorado.gov/CTC-EITC", "snapshot": "dor-ctc-eitc",
           "quote": "The credit was 50% of the federal EITC amount for Tax Years 2024 and 2025, but will be reduced to 25% in Tax Year 2026.",
           "retrieved": "2026-11-11",
           "states": "0.25"

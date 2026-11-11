@@ -3,9 +3,14 @@
   text        every provision id is unique; content hashes match text/manifest.json
   parameters  date ranges are ordered and do not overlap; statute refs resolve;
               a value that any source contradicts must carry a conflict_note
+  sources     every stored copy in sources/ matches its recorded hash; every
+              quote that names a stored copy appears in it word for word; an
+              agency_published value has at least one agency quote checked so
   rules       every cited provision id and parameter id exists
 
 Run with --stamp to (re)write text/manifest.json after an intended text change.
+Run with --strict to also fail on any value that rests on the statute snapshot
+alone, which is known to be out of date.
 Exit code 1 on any error. Acknowledged conflicts are listed but are not errors.
 """
 import datetime
@@ -20,6 +25,7 @@ sys.path.insert(0, str(ROOT))
 
 import engine.co_rules  # noqa: E402,F401  (registers the rules)
 from engine.core import RULES, STATUSES, Parameters  # noqa: E402
+from tools.snapshot_source import load_manifest, normalise, snapshot_text  # noqa: E402
 
 TEXT_DIR = ROOT / "text"
 MANIFEST = TEXT_DIR / "manifest.json"
@@ -84,8 +90,8 @@ def check_parameters(parameters, index, errors):
 
             disagreeing = []
             for source in entry.get("sources", []):
-                if source["kind"] == "statute" and source["ref"] not in index:
-                    errors.append("%s: statute ref does not resolve: %s" % (label, source["ref"]))
+                if "ref" in source and source["ref"] not in index:
+                    errors.append("%s: text ref does not resolve: %s" % (label, source["ref"]))
                 if "states" in source and source["states"] != entry["value"]:
                     disagreeing.append(source)
             if disagreeing:
@@ -94,6 +100,52 @@ def check_parameters(parameters, index, errors):
                 for source in disagreeing:
                     conflicts.append((label, entry["value"], source))
     return conflicts
+
+
+def check_sources(parameters, errors):
+    """Check stored copies and the quotes that rest on them.
+
+    Returns (rows, snapshot_only). Each row is one non-statute source with a
+    computed status: 'verified' (its quote is in the stored copy) or
+    'unverified' (no stored copy, so nothing was checked).
+    """
+    manifest = load_manifest()
+    texts = {}
+    for source_id, record in sorted(manifest.items()):
+        path = ROOT / "sources" / (source_id + ".txt")
+        if not path.exists():
+            errors.append("sources/%s.txt is missing" % source_id)
+            continue
+        if hashlib.sha256(path.read_bytes()).hexdigest() != record["text_sha256"]:
+            errors.append("sources/%s.txt does not match the hash in sources/manifest.json" % source_id)
+        texts[source_id] = snapshot_text(source_id)
+
+    rows, snapshot_only = [], []
+    for pid, data in sorted(parameters.by_id.items()):
+        for entry in data["values"]:
+            label = "%s from %s" % (pid, entry["effective_from"])
+            agency_verified = False
+            for source in entry.get("sources", []):
+                if source["kind"] == "statute":
+                    continue
+                status = "unverified"
+                snapshot = source.get("snapshot")
+                if snapshot:
+                    if snapshot not in texts:
+                        errors.append("%s: source names unknown stored copy %r" % (label, snapshot))
+                    elif not source.get("quote"):
+                        errors.append("%s: source names stored copy %s but records no quote" % (label, snapshot))
+                    elif normalise(source["quote"]) not in texts[snapshot]:
+                        errors.append("%s: quote not found in sources/%s.txt: %r" % (label, snapshot, source["quote"]))
+                    else:
+                        status = "verified"
+                        agency_verified = agency_verified or source["kind"] == "agency"
+                rows.append((label, source["kind"], status, snapshot or source.get("url", "")))
+            if entry.get("status") == "agency_published" and not agency_verified:
+                errors.append("%s: status is agency_published but no agency quote is checked against a stored copy" % label)
+            if entry.get("status") in ("statute_snapshot", "statutory_default"):
+                snapshot_only.append(label)
+    return rows, snapshot_only
 
 
 def check_rules(parameters, index, errors):
@@ -112,6 +164,7 @@ def main():
     check_manifest(index, errors, stamp="--stamp" in sys.argv)
     parameters = Parameters()
     conflicts = check_parameters(parameters, index, errors)
+    source_rows, snapshot_only = check_sources(parameters, errors)
     check_rules(parameters, index, errors)
 
     print("text:       %d provisions, %d with content" % (len(index), sum(1 for h in index.values() if h)))
@@ -125,6 +178,21 @@ def main():
             where = source.get("ref") or source.get("url")
             print("  %s\n      used %s; %s source %s states %s" % (
                 label, json.dumps(value), source["kind"], where, json.dumps(source["states"])))
+
+    verified = sum(1 for row in source_rows if row[2] == "verified")
+    print("\nSources other than statute text: %d, of which %d have a quote checked against a stored copy"
+          % (len(source_rows), verified))
+    for label, kind, status, where in source_rows:
+        if status != "verified":
+            print("  unverified: %s, %s source %s" % (label, kind, where))
+
+    if snapshot_only:
+        print("\nValues resting on the statute snapshot alone, which is known to be out of date (%d):"
+              % len(snapshot_only))
+        for label in snapshot_only:
+            print("  " + label)
+        if "--strict" in sys.argv:
+            errors.append("--strict: %d value(s) rest on the statute snapshot alone" % len(snapshot_only))
 
     if errors:
         print("\nERRORS (%d):" % len(errors))

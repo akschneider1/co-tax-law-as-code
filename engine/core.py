@@ -103,8 +103,8 @@ class Context:
         entry = self.parameters.entry(param_id, on_date)
         if entry["status"] != "agency_published":
             self.warn("%s: status is %s" % (param_id, entry["status"]))
-        if not any(s["kind"] == "statute" for s in entry.get("sources", [])):
-            self.warn("%s: no ingested statute text supports this value; the cited provisions do not state it" % param_id)
+        if not any("ref" in s for s in entry.get("sources", [])):
+            self.warn("%s: no ingested text supports this value; the cited provisions do not state it" % param_id)
         for key in ("caveat", "conflict_note"):
             if entry.get(key):
                 self.warn("%s: %s" % (param_id, entry[key]))
