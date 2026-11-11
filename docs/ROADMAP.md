@@ -6,7 +6,7 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 
 | Piece | State |
 |---|---|
-| Text, parameters, engine, 15 tests, validator | Working. `tools/validate.py` and `tools/run_tests.py` pass. |
+| Text, parameters, engine, 16 tests, validator | Working. `tools/validate.py` and `tools/run_tests.py` pass. |
 | Grounding build (`tools/build_web.py`) | Working. 33 hand-marked spans located verbatim and re-parsed. |
 | Viewer (`web/index.html`, USWDS 3.14.0) | Working. Checked in a browser: both parameters, year selection, no console errors. |
 | LangExtract script (`tools/extract_langextract.py`) | Written, never run. Only its non-model parts were tested, with a stand-in for the library. |
@@ -16,8 +16,8 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 
 ### Known weaknesses
 
-- **The statute text is out of date.** It comes from an unofficial mirror (public.law). Four values it gives differ from what the Department of Revenue publishes; see the README table. The amending provisions are not ingested.
-- **Tests are hand-derived** from the parameter files. None comes from an official form example.
+- **The statute text is out of date.** It comes from an unofficial mirror (public.law). Five values it gives differ from what the Department of Revenue publishes; see the README table. The amending provisions are not ingested.
+- **Tests are hand-derived** from the parameter files, except one taken from the 2023 104 Book.
 - **Span marking is unreviewed.** A language model marked the spans; no lawyer has checked them.
 - **`build_web.py` duplicates code** that now also lives in `textlib.py` (section loading and the two parsers). The first refactor is to make it import from `textlib.py`.
 
@@ -32,9 +32,9 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 
 ### Stanford RegLab: STARA (Statutory Research Assistant)
 
-Read from the project page, FAQ and policy page. The paper and policy brief PDFs could not be read as text, so the method details below are incomplete.
+Read from the project page, FAQ and policy page, and later from the paper itself and its follow-up benchmark paper. Method details are in `docs/research/notes/stara_hsu_followup.md`.
 
-- **Context is the largest lever.** Their ablation on federal criminal statutes: a bare model call scored precision 0.58 and extraction quality 0.28. Adding basic context (headings, definitions, cross-references) raised these to 0.96 and 0.70. The full system reached 0.96 and 0.76, with recall 0.998.
+- **Context is the largest lever.** Their ablation on federal criminal statutes: a bare model call scored precision 0.58 and extraction quality 0.28. Adding basic context raised these to 0.96 and 0.70. The full system reached 0.98 and 0.76, with recall 0.998. The context the paper describes is headings, definitions, lead-in sentences and trailing provisos.
 - **Subsections are fragments.** They only make sense with their parent provision, so each unit is annotated with non-local context before a model sees it.
 - **Enumerate, then aggregate.** They process a complete list of units in batches and aggregate, not one open-ended search. General research tools reached recall of 0.04 to 0.14 on the same task.
 - **Measure against human-compiled lists**, with precision and recall.
@@ -61,7 +61,7 @@ Read from two public repositories and one open Substack post. His "Policy as cod
 3. **Score extractions.** Add `tools/evaluate.py`: precision, recall and F1 by span class against the hand marks, exact and overlapping match. Done when it prints a table for any candidates file.
 4. **Integrity flags that override the score.** Not verbatim (fabricated), date or number that does not re-parse (misparse), text contradicted by a higher-status source (stale). Any flag marks the candidate set as not reliable.
 5. **Model comparison and consensus.** Run two or more models, score each, and keep only spans a majority agree on. Disagreements go to review.
-6. **Ingest current official text** of 39-22-104, 39-22-123.5 and 39-22-627 with the session laws that amended them, then re-run the validator to see which of the four conflicts close.
+6. **Ingest current official text** of 39-22-104, 39-22-123.5 and 39-22-627 with the session laws that amended them, then re-run the validator to see which of the five conflicts close.
 
 ### Scalability
 
@@ -89,15 +89,25 @@ Read from two public repositories and one open Substack post. His "Policy as cod
 
 ## Proposed changes from the follow-up research
 
-A second research pass on 11 November 2026 is written up in `docs/research/notes/stara_hsu_followup.md`. That session could reach GitHub and web search only, so the STARA papers and every Colorado government page are still unread. These are proposals. None is started, and the numbered items above are unchanged until they are accepted.
+Two further research passes on 11 November 2026 are written up in `docs/research/notes/stara_hsu_followup.md`. The first could reach GitHub and web search only. The second could also reach the legislature, the Department of Revenue, the Secretary of State, arXiv and Stanford, and read both STARA papers and the Colorado sources.
+
+Done in the second pass, because each rests on a source that was read:
+
+- The 2023 EITC share is corrected from 25% to 50% (a fifth conflict with the snapshot).
+- The 2022 EITC share and the 2027 brackets gained primary sources.
+- One test now comes from the 2023 104 Book.
+- The README states the tax-table, rounding and under-25 limits.
+
+Everything lettered below is a proposal. None is started, and the numbered items above are unchanged until they are accepted.
 
 ### Corrections to the roadmap as written
 
-- **Item 10: do not use `lawscraper`.** It has no licence, scrapes Justia and FindLaw (unofficial mirrors), has no Colorado output, and its FindLaw parser keeps only the first paragraph of a section. Build ingestion on the legislature's own title files.
+- **Item 10: do not use `lawscraper`.** It has no licence, scrapes Justia and FindLaw (unofficial mirrors), has no Colorado output, and its FindLaw parser keeps only the first paragraph of a section. Build ingestion on the legislature's own title files. The 2026 files, current through the 2026 Second Regular Session, are linked from the Office of Legislative Legal Services download page and hosted on `olls.info`, which no session has yet been allowed to reach.
 - **Environment note on `lx.extract`: answered.** `additional_context` exists, as do `extraction_passes`, `max_workers` and `max_char_buffer` (read on `main`, not checked against the v1.7.2 tag).
 - **Item 5: `extraction_passes` is not consensus.** It merges passes with "first extraction wins for overlaps". A majority vote needs separate runs compared by our own code.
 - **Item 8: parallel workers already exist** in LangExtract (`max_workers`, `batch_length`). Nothing to build for the LangExtract path.
-- **STARA lessons: the published repositories hold no code or prompts.** Nothing can be reused; the method has to come from the paper.
+- **STARA lessons: the published repositories hold no code or prompts.** Nothing can be reused; the method comes from the paper, which has now been read.
+- **STARA lessons: two figures corrected in place.** The full system's precision is 0.98, not 0.96, and the paper's context list does not name cross-references as a separate item.
 
 ### Fix before the first LangExtract run
 
@@ -105,27 +115,31 @@ A. **Set `max_char_buffer` above the longest provision.** The default of 1,000 c
 B. **Use `char_interval`, not `text.find`,** in `keep_grounded`. `find` returns the first occurrence, so a second mark of a repeated phrase is dropped as an overlap.
 C. **Record `alignment_status` on every candidate** and accept `match_exact` only. Fuzzy alignment is on by default in the library.
 D. **Pass `additional_context`** from `textlib.context_for` (this is item 1; it is now known to be possible).
+D2. **Add the two kinds of context STARA uses that `context_for` lacks.** STARA attaches four things to each unit: headings, definitions of terms used in it, the lead-in sentence a list item completes, and trailing provisos from following units. `context_for` sends headings, parent text and cross-referenced text. It does not look up defined terms or following provisos.
+D3. **Check provision size.** STARA found units under 100 words lack context and units over 2,000 words are unreliable, and aims for about 1,000. Report the word count of each provision and merge or split the outliers before extraction.
 
 ### Accuracy
 
-E. **Treat the hand marks as a reference, not as truth.** STARA's benchmark reportedly found 135 of 181 apparent false positives were correct and missing from the human list. In `tools/evaluate.py` (item 3), a candidate span the hand marks lack goes to an adjudication list with three outcomes: model wrong, hand marks wrong, both defensible. Report precision before and after adjudication.
+E. **Treat the hand marks as a reference, not as truth.** STARA's benchmark found 135 of 181 apparent false positives were correct and missing from the attorneys' list. In `tools/evaluate.py` (item 3), a candidate span the hand marks lack goes to an adjudication list with three outcomes: model wrong, hand marks wrong, both defensible. Report precision before and after adjudication.
 F. **Keep the two example provisions out of the score.** They are shown to the model, so scoring them measures copying.
 G. **Measure run-to-run stability.** Run each provision three times and report the share of spans that appear in all three. Hsu's target for repeat-run agreement is above 0.95.
 H. **Tag each provision with the structural tasks it needs**: defined term, cross-reference, lead-in clause, amendment. Report accuracy by tag, so a failure points to missing context of a named kind.
-I. **Say in the prompt how to treat provisions limited to past tax years.** Most of our provisions are. STARA's benchmark counted unstated handling of expired provisions as a source of error.
+I. **Say in the prompt how to treat provisions limited to past tax years.** Most of our provisions are. Many of the 44 reasoning errors in STARA's benchmark came from a prompt that did not say whether provisions with "historical effect only" count.
 J. **Give every source a verification record.** Fields: `support_type` (quoted or paraphrased), `verifier_status` (unverified, verified, contradicted), `method`, `checked_on`. The validator fails an `agency_published` value whose agency source is not `verified`.
 K. **Snapshot agency pages.** Store the page text under `sources/<id>/` with `url`, `retrieved` and `sha256`, and have the validator confirm each recorded `quote` is in the stored text. Today the quotes are checked against nothing.
 L. **Decide a re-verification schedule.** A snapshot does not notice change. Suggested: re-read every agency source each January, when new forms are published, and after each legislative session.
 M. **Add a staleness class to each provision in the manifest**: active, partially amended, formally superseded, effectively dead, unknown. The four conflict provisions are "partially amended" now, and this replaces item 2's single flag with something the viewer can show.
 N. **Keep README claims no stronger than the checks.** Two of Hsu's repositories state more than their code tests. Add a short table to the README: each claim, and the script and check that enforces it.
 
-### Parameters to verify next (leads, not values)
+### Parameters
 
-O. **2023 EITC share.** PolicyEngine records 50% and cites the 2023 104 Book, page 18. We record 25% from the snapshot alone. Read the booklet; if it says 50%, this is a fifth conflict.
-P. **EITC from 2027.** A search snippet of the Department of Revenue's EITC topics page reads "2026 and later: 25%". Read the page; it may close the 2027 gap.
-Q. **Amendment 87.** The final text and Blue Book are on the legislature's site. A snippet mentioning "$510,834" suggests the thresholds are indexed, which would make our round 2027 figures wrong for 2027.
-R. **HB24-1134.** It appears to hold the EITC trigger our snapshot lacks. Ingest it with item 6.
-S. **Cross-check against PolicyEngine in a script** (`tools/crosscheck_policyengine.py`) that fetches its two Colorado parameter files at run time and reports differences. Fetch, do not copy: PolicyEngine is AGPL-3.0.
+O. **2023 EITC share: done.** The 2023 form says 50%; the parameter file now records it with a conflict note.
+P. **EITC from 2027: a decision is needed.** The Department's table reads "2026 and later 25%". It is not recorded for 2027, because HB24-1134 has not been read and the percentage may depend on a revenue trigger. Either accept the agency's row as an `agency_published` value with that caveat, or keep refusing until the act is read.
+Q. **Amendment 87: sources done, ingestion not.** The brackets are confirmed from the measure's text. They are not indexed and do not vary by filing status. Still to do: ingest the text into `text/`, mark spans, add effective dates so (1.7)(c) ends with 2026, and model proposed (1.8)(b) on principal-residence gain. Watch for certification of the result.
+R. **HB24-1134 and the 2026 rate: still open.** The bill page refused the download. The Department's rate table still stops at 2025.
+S. **Cross-check against PolicyEngine in a script** (`tools/crosscheck_policyengine.py`) that fetches its two Colorado parameter files at run time and reports differences. Fetch, do not copy: PolicyEngine is AGPL-3.0. A manual comparison is in the research note; after the 2023 correction the two agree on every value both record.
+S2. **Model the form's tax table** for taxable income under $50,000, as a separate rule from the statutory rate, so the engine can reproduce the amount on the form as well as the amount the statute implies.
+S3. **Take official tests from the 104 Books.** Each year's tax table gives hundreds of income and tax pairs. A script could turn a table into test cases once S2 exists.
 
 ### Scalability
 
@@ -146,7 +160,7 @@ X. **Item 13: one content store, two readers.** Hsu's FR 2052a site serves the s
 ### Suggested order
 
 1. A to D, then the first real LangExtract run with and without context (items 1 and 3, with E and F).
-2. O to R, which need a session that can reach `leg.colorado.gov` and `tax.colorado.gov`.
+2. The decision in P, then Q's ingestion of the measure text.
 3. J, K and M, which strengthen what is already recorded.
 4. Everything else.
 

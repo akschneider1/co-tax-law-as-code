@@ -8,21 +8,23 @@
       "effective_from": "2022-01-01",
       "effective_to": "2022-12-31",
       "value": "0.20",
-      "status": "statute_snapshot",
+      "status": "agency_published",
       "sources": [
-        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/b", "states": "0.20"}
-      ],
-      "caveat": "Statute snapshot only. The Department of Revenue page read on 2026-11-11 does not state a 2022 percentage."
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/b", "states": "0.20"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Income Tax Topics: Earned Income Tax Credit", "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit", "locator": "Credit Percentages table", "quote": "2022 20%", "retrieved": "2026-11-11", "states": "0.20"}
+      ]
     },
     {
       "effective_from": "2023-01-01",
       "effective_to": "2023-12-31",
-      "value": "0.25",
-      "status": "statute_snapshot",
+      "value": "0.50",
+      "status": "agency_published",
       "sources": [
-        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/c/I", "states": "0.25"}
+        {"kind": "statute", "ref": "/us/co/crs/39-22-123.5/2/c/I", "states": "0.25"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "Income Tax Topics: Earned Income Tax Credit", "url": "https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit", "locator": "Credit Percentages table", "quote": "2023 50%", "retrieved": "2026-11-11", "states": "0.50"},
+        {"kind": "agency", "publisher": "Colorado Department of Revenue", "title": "2023 Colorado Individual Income Tax Filing Guide (104 Book), form DR 0104CR", "url": "https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf", "locator": "DR 0104CR, earned income tax credit table, line 5", "quote": "COEITC, multiply line 4 by 50% (0.50).", "retrieved": "2026-11-11", "sha256": "7f9f50ce9ce9e5552cd7e6e6454e1e25fca0bfbfb7226e2e12cf4f0bc5680d5c", "states": "0.50"}
       ],
-      "caveat": "Statute snapshot only. The Department of Revenue page read on 2026-11-11 does not state a 2023 percentage."
+      "conflict_note": "The ingested statute snapshot says 25% for 2023; the Department of Revenue's 2023 form and its credit percentage table both say 50%. The agency value is used. Same cause as the 2024 conflict: the snapshot omits a later amendment, which has not been ingested. Until 2026-11-11 this repository recorded 25% from the snapshot alone."
     },
     {
       "effective_from": "2024-01-01",
@@ -80,6 +82,6 @@
     }
   ],
   "gaps": [
-    "No value is recorded for tax years from 2027. The Department of Revenue page speaks only to 2026, and the statute snapshot is known to be out of date, so the engine refuses to compute the credit for 2027 onward."
+    "No value is recorded for tax years from 2027, so the engine refuses to compute the credit for 2027 onward. The Department of Revenue's credit percentage table (https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit, read 2026-11-11) has a row '2026 and later 25%'. It is not recorded as a 2027 value because the statute snapshot is known to be out of date, the amending act (HB24-1134) has not been read, and a secondary source (PolicyEngine) notes the percentage can rise with state revenue."
   ]
 }

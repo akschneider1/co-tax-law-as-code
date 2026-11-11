@@ -90,27 +90,32 @@ The engine attaches a warning to any result that uses a value below `agency_publ
 
 ## What the prototype found
 
-**The statute snapshot and the agency disagree in four places.** The text comes from an unofficial mirror (public.law), which names the legislature's 2024 Title 39 PDF as its source. The Department of Revenue's pages, read on 11 November 2026, publish different numbers:
+**The statute snapshot and the agency disagree in five places.** The text comes from an unofficial mirror (public.law), which names the legislature's 2024 Title 39 PDF as its source. The Department of Revenue's pages, read on 11 November 2026, publish different numbers:
 
 | Parameter | Tax year | Statute snapshot | Department of Revenue | Used |
 |---|---|---|---|---|
+| EITC share of federal credit | 2023 | 25% | 50% | 50% |
 | EITC share of federal credit | 2024 | 38% | 50% | 50% |
 | EITC share of federal credit | 2025 | 25% | 50% | 50% |
 | EITC share of federal credit | 2026 | 20% | 25% | 25% |
 | Income tax rate | 2024 | 4.40% | 4.25% | 4.25% |
 
+The 2023 row was found later than the others: until the Department's 2023 form and its credit percentage table were read, this repository recorded 25% for 2023 from the snapshot alone.
+
 The snapshot's own heading for 39-22-123.5 mentions a "trigger" that its text does not contain, and its copy of 39-22-627 (temporary rate reduction) describes only a 4.63% to 4.50% cut. So the mirror is behind current law. The amending provisions have not been ingested, which means the rules for those years rest on agency statements, not on text in this repository.
 
-**Two values are not known.** No Department of Revenue rate for 2026 was found, so the statutory 4.40% is used with a warning. No EITC percentage for 2027 is recorded, so the engine refuses to compute the credit for that year.
+**Two values are not known.** No Department of Revenue rate for 2026 was found, so the statutory 4.40% is used with a warning. No EITC percentage for 2027 is recorded, so the engine refuses to compute the credit for that year. The Department's credit percentage table has a row "2026 and later 25%", which is not used for 2027 because the act behind it (HB24-1134) has not been read.
 
-**The 2027 brackets rest on a news report.** Amendment 87's six brackets come from The Colorado Sun's account of an uncertified result. The measure's text is not ingested. One schedule is applied to every filer because filing-status thresholds, indexing and the income base are unknown.
+**The 2027 brackets come from the measure's text, and the result is not certified.** Amendment 87's six brackets were read from the final text of initiative 2025-2026 #195 on the legislature's site, and match The Colorado Sun's account. No certification of the result was found as of 11 November 2026. The text sets one schedule for every individual, estate and trust, with no filing-status thresholds, and the Blue Book says the brackets are not adjusted for inflation. The measure's text is not ingested into `text/` and has no marked spans. Two parts of it are not modelled: a 4.40% rate on certain gain from selling a principal residence, and temporary rate changes under 39-22-627.
 
 ## Limits
 
 - **Inputs, not computations:** Colorado taxable income and the federal credit are supplied by the caller. The additions and subtractions in 39-22-104(3) and (4) are not modelled.
 - **Residency:** part-year residents and nonresidents are rejected.
-- **Rounding:** whole dollars, half up. This is an assumption; it was not checked against form DR 0104.
-- **Tests:** all 15 cases were worked by hand from the parameter files. None comes from an official form example or a Department of Revenue test scenario, so they check the engine against the parameters, not the parameters against the law.
+- **Rounding:** whole dollars, half up. The 2023 104 Book says to round dollar amounts to the nearest whole dollar; its treatment of exact half dollars was not checked.
+- **Tax table:** for taxable income under $50,000 the Department publishes tax tables that, in its words, "approximate" the tax at the prescribed rate. The 2023 table works in $100 bands. The engine applies the rate to the exact income, so its result can differ from the form's by a few dollars in that range.
+- **Filers the federal credit excludes:** Colorado allows its credit to some filers who cannot claim the federal one (certain filers under 25, and filers without a Social Security number valid for work), based on the federal credit they would have been allowed. The engine takes the federal credit as given, so the caller must supply that would-be amount for these filers.
+- **Tests:** 15 of the 16 cases were worked by hand from the parameter files, so they check the engine against the parameters, not the parameters against the law. One case takes its tax and credit figures from the Department of Revenue's 2023 booklet. None comes from a Department of Revenue test scenario.
 - **Text format:** a USLM-inspired hierarchy, not schema-valid USLM. One snapshot only; no point-in-time history.
 - **Citations are per rule, not per year:** the trace for a 2027 calculation still lists 39-22-104(1.7)(c), the flat-rate provision. A warning says no ingested text supports the value.
 
@@ -120,4 +125,4 @@ The snapshot's own heading for 39-22-123.5 mentions a "trigger" that its text do
 2. Add effective-date ranges to provisions so a rule cites the text in force for the tax year.
 3. Replace derived test cases with official ones: DR 0104 worked examples and, if obtainable, e-file acceptance scenarios.
 4. Cross-check results against PolicyEngine's Colorado model, then decide what to contribute upstream.
-5. Ingest Amendment 87's certified text and fill in the unknown bracket rules.
+5. Ingest Amendment 87's text into `text/` once the result is certified, mark its spans, and model the principal-residence rule.

@@ -1,6 +1,6 @@
 {
   "about": "Engine-independent test corpus: facts in, expected whole-dollar results out. Any engine that reads the same facts should reproduce these numbers.",
-  "basis_note": "Every case is 'derived': expected values were worked by hand from the parameter files. None comes from an official form example or a Department of Revenue test scenario, so the corpus checks the engine against the parameters, not the parameters against the law.",
+  "basis_note": "Cases marked 'derived' were worked by hand from the parameter files, so they check the engine against the parameters, not the parameters against the law. One case is marked 'official': its tax and credit figures come from a Department of Revenue booklet. No case comes from a Department of Revenue test scenario.",
   "cases": [
     {
       "id": "2022-flat-rate-with-credit",
@@ -13,6 +13,13 @@
       "basis": "derived",
       "facts": {"tax_year": 2023, "colorado_taxable_income": 50000},
       "expect": {"income_tax_before_credits": "2200", "co_eitc": "0", "net_tax_after_eitc": "2200"}
+    },
+    {
+      "id": "2023-official-tax-table-row-and-credit-line",
+      "basis": "official",
+      "note": "From the Department of Revenue's 2023 104 Book (https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf, read 2026-11-11). The 2023 Colorado Income Tax Table gives $895 for taxable income over $20,300 but not over $20,400; the income used here is the middle of that band, where the table and the exact rate agree. Form DR 0104CR line 5 reads 'COEITC, multiply line 4 by 50% (0.50)'. The net figure is derived from those two.",
+      "facts": {"tax_year": 2023, "colorado_taxable_income": 20350, "federal_eitc": 1000},
+      "expect": {"income_tax_before_credits": "895", "co_eitc": "500", "net_tax_after_eitc": "395"}
     },
     {
       "id": "2024-temporary-rate-and-50-percent-credit",

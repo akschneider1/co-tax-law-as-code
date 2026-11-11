@@ -1,18 +1,20 @@
 # Follow-up research: STARA, Hsu, and the sources the roadmap left open
 
-Written 11 November 2026, in a cloud session. It continues the research recorded in `docs/ROADMAP.md` and closes, or fails to close, the gaps that file named. Proposals drawn from it are in the roadmap under "Proposed changes from the follow-up research".
+Written 11 November 2026, in a cloud session, in two passes. It continues the research recorded in `docs/ROADMAP.md` and closes, or fails to close, the gaps that file named. Proposals drawn from it are in the roadmap under "Proposed changes from the follow-up research".
 
 ## How this was read, and what could not be
 
-The session's network allowed GitHub and web search only. Every other host was refused by the network policy, including `arxiv.org`, `*.stanford.edu`, `leg.colorado.gov`, `tax.colorado.gov`, `coloradosos.gov` and Substack.
+In the first pass the network allowed GitHub and web search only. In the second, a new environment also allowed the legislature (`leg.colorado.gov`, `content.leg.colorado.gov`), the Department of Revenue (`tax.colorado.gov`), the Secretary of State, `arxiv.org` and three Stanford hosts.
 
 Each finding below carries one of three marks:
 
-- **Read**: the page or file itself was fetched and read (GitHub only).
+- **Read**: the page or file itself was fetched and read.
 - **Search**: taken from a search engine's summary of a page that was not opened. Treat as a lead, not a source. Nothing marked Search may go into `parameters/`.
 - **Not read**: the source exists and was not reachable.
 
-Still not read after this pass: the STARA paper, the LaborBench paper, the Stanford HAI brief, every Colorado government page, Amendment 87's text and Blue Book, and Hsu's Substack posts.
+Still not read: Hsu's Substack posts, HB24-1134 (the bill page refused the download with HTTP 406), the 2026 statute files (hosted on `olls.info`, not on the allowed list), the Stanford HAI brief, and any certified election result.
+
+**A caution from this work.** The first pass took one lead from a search snippet that turned out to be wrong when the document was read: a mention of "$510,834" looked like an inflation-indexed threshold. It is the income at which Amendment 87 stops being a tax cut, and the Blue Book says the brackets are not indexed. Section 6 records what was read. This is the reason for the Read and Search marks.
 
 ## 1. PolicyEngine's Colorado parameters (Read)
 
@@ -35,7 +37,7 @@ Files read from `PolicyEngine/policyengine-us` on `main`: `parameters/gov/states
 
 What this shows:
 
-- **A probable fifth conflict, for 2023.** PolicyEngine records 50% for 2023 and cites the Department of Revenue's 2023 104 Book, line 5 (`Book0104_2023.pdf`, page 18). Our 25% comes from the statute snapshot alone, and our own caveat says the agency page we read does not state a 2023 figure. PolicyEngine is a secondary source and the booklet was not read here, so the parameter file is unchanged. The booklet has to be read before anything is recorded.
+- **A fifth conflict, for 2023, now confirmed and corrected.** PolicyEngine records 50% for 2023 and cites the Department of Revenue's 2023 104 Book. When the first pass ran, this repository recorded 25% from the statute snapshot alone (the table above shows that state). The second pass read the booklet: form DR 0104CR, line 5, says "COEITC, multiply line 4 by 50% (0.50)". The parameter file now records 50% with a conflict note. See section 6.
 - **Every value we already took from the agency matches.** That is some independent support for the four known conflicts being resolved the right way.
 - **PolicyEngine does not help with our two unknowns.** It has no 2026 rate and nothing for Amendment 87. It carries 25% forward to 2033 as a default, with a comment that the match "can rise higher depending on state revenue", which is the trigger our snapshot's heading mentions and its text lacks.
 - **Its reference list is a map to official test material.** It cites the 104 Book for each year by page: 2022 (`DR_104_Book_2022.pdf`, pages 16 and 19), 2023 (`Book0104_2023.pdf`, pages 18 and 21), 2024 (`DR0104_book_2024.pdf`, pages 11 and 25), 2025 (`Book104_2025.pdf`, pages 11 and 25). Those are the documents the roadmap wants for official tests and for the rounding rule.
@@ -81,17 +83,55 @@ Conclusion: roadmap item 10 said to "look at `lawscraper` first". It has been lo
 
 RegLab's `stara` and `stara_public` repositories contain only a pointer to the project website. No STARA code, prompts or schema are published on GitHub.
 
-## 4. STARA and LaborBench (Search only; papers Not read)
+## 4. STARA and LaborBench (Read)
 
-The roadmap said the STARA paper's method details were incomplete. They still are. From search summaries of the ICAIL 2025 paper and of "Benchmarking Legal RAG: The Promise and Limits of AI Statutory Surveys" (arXiv 2603.03300):
+Both papers were read in the second pass: "What Is the Law? A System for Statutory Research (STARA) with Large Language Models" (ICAIL 2025) and "Benchmarking Legal RAG: The Promise and Limits of AI Statutory Surveys" (arXiv 2603.03300).
 
-- STARA runs in three stages: segment the code into provisions and attach chosen context (hierarchy, definitions, cross-references); have a model classify each provision, extract structured data and give its reasoning; then organise and report.
-- On LaborBench (state unemployment insurance law, with a Department of Labor compilation as the reference), STARA scored 83% against 58% for Westlaw AI and 64% for Lexis+ AI.
-- **135 of STARA's 181 apparent false positives were correct**: provisions the Department of Labor's attorneys had missed. Corrected accuracy is reported as 92%.
-- Some remaining "errors" were ambiguity in the question: a provision can stay in the code "with historical effect only", and the prompt did not say whether expired provisions count.
-- Real errors included citing the wrong state's provisions, twice.
+### Method
 
-If the 135-of-181 figure holds when the paper is read, it changes how roadmap item 3 should work. A human-made reference list is not ground truth. A candidate span the hand marks lack is a disagreement to adjudicate, not automatically a false positive.
+- **The unit is the smallest enumerated provision**, not the section. Each unit keeps its numbering, text, parents and children.
+- **Units are then resized.** "Provisions shorter than 100 words often lack sufficient context for effective extraction, while those longer than 2,000 words tend to be too complex for reliable LLM processing." Small related units are merged and large ones split, aiming at about 1,000 words.
+- **Each unit gets up to four pieces of context**:
+  1. a heading: citation, position in the code, and the titles of its parent divisions;
+  2. definitions of terms that appear in the unit and are defined in a relevant part of the code;
+  3. lead-ins ("chapeaus"): the opening of a sentence that a list item completes;
+  4. suffixes: provisos or continuations in following units that change the unit's meaning.
+- **Definitions are scoped.** A definition that says "for purposes of this Chapter 41" is attached to every unit inside Chapter 41 and to no others. This takes pattern matching, model-based parsing and scope logic over the hierarchy.
+- **Parsing varies by code.** For the U.S. Code they use the House's XML. For others they use regular expressions for structural markers, definitions and cross-references.
+- **A search runs in four steps**: the user describes what counts as relevant; a model turns that into a detailed prompt with multi-step criteria, with positive and negative examples if the user gives them; an optional broad keyword filter makes a shortlist; a model classifies every shortlisted unit, gives its reasoning, and extracts named fields.
+- **The model was Llama 3.3 70B.** The gain came from context, not from a frontier model.
+
+### Results
+
+Ablation on the federal criminal statutes task (Table 4 of the paper):
+
+| Configuration | Precision | Recall | Extraction |
+|---|---|---|---|
+| Base | 0.58 | 0.990 | 0.28 |
+| + Prompt engineering | 0.76 | 0.987 | 0.32 |
+| + Basic context | 0.96 | 0.984 | 0.70 |
+| Full system | 0.98 | 0.998 | 0.76 |
+
+Recall was high in every configuration. Context bought precision and extraction quality. The roadmap had recorded the full system's precision as 0.96; it is 0.98.
+
+On the same task, Gemini Deep Research reached recall 0.144, OpenAI Deep Research 0.044 and Westlaw's survey tool 0.072.
+
+### What the benchmark paper adds
+
+- **135 of STARA's 181 apparent false positives were correct**: provisions the Department of Labor's attorneys had missed. Every flagged case was checked by hand. Corrected accuracy is 92%, up from 83%.
+- **44 were reasoning errors, and many of those were ambiguity in the question.** "A statute can remain in the code with historical effect only, and the prompt does not specify whether such expired provisions should count."
+- **2 were system errors**: citing another state's provisions.
+- **69 false negatives**, some because the rule lived in a regulation or an agency interpretation and STARA searched statutes only.
+- The paper's own limits: one legal domain, and the commercial tools' false positives were not all checked.
+
+Its stated limits in the first paper: the keyword pre-filter can drop relevant provisions, and results are not de-duplicated.
+
+### What this means for us
+
+- A human-made reference list is not ground truth. A candidate span the hand marks lack is a disagreement to adjudicate.
+- Our `context_for` sends headings, parent text and cross-referenced text. It does not look up defined terms, and it does not carry trailing provisos. Parent text covers lead-ins only where the lead-in is the parent's own text.
+- Most of our provisions are limited to past tax years. The prompt has to say how to treat them.
+- The rule for a year can live outside the statute. For us that is the Department of Revenue's forms and tables, which is where four of the five conflicts were found.
 
 ## 5. Hsu's work since the roadmap was written (Read)
 
@@ -141,16 +181,42 @@ The others are conflict detection and calibration (expected calibration error be
 
 147 Markdown files with YAML front matter, served to people as pages and to programs through a small API, an `/llms.txt` file and an MCP server with 11 tools. No evaluation. Relevant to roadmap item 13 only as a pattern: one content store, two readers.
 
-## 6. Colorado facts the roadmap left open (Search only)
+## 6. Colorado sources (Read)
 
-None of this may enter `parameters/` until the page itself is read.
+Read in the second pass. Values taken from them are recorded in `parameters/` with the quote, the retrieval date and, for PDFs, a hash of the file.
 
-- **Amendment 87.** Reported at about 51% on 6 November 2026, with one outlet noting the Associated Press had not called it. No certification found. It was Initiative 2025-2026 #195. The legislature hosts a "Final Text" (received 9 January 2026), a Legislative Council draft packet and the Blue Book, all under `leg.colorado.gov/ballots/graduated-income-tax-2/files/`. The proponents' fact sheet gives the same six rates and thresholds we recorded from The Colorado Sun. Other outlets describe the top of the schedule differently (7.4% above $500,000 rising to 8.4% above $1 million, or 8.4% above $2 million), so the news reports do not agree with each other.
-- **A hint that thresholds are indexed.** A snippet of the Legislative Council analysis refers to "Colorado taxable income of $510,834", which is not one of the round thresholds. Our 2027 caveat lists indexing as unknown; this suggests the answer is yes and that the round figures may not be the 2027 figures.
-- **EITC from 2027.** A snippet of the Department of Revenue's "Income Tax Topics: Earned Income Tax Credit" page reads "2026 and later: 25%". The page we did read speaks only to 2026. If the topics page says this, the 2027 gap can be filled from an agency source.
-- **The EITC trigger.** The HB24-1134 summary is reported to tie higher percentages for 2026 and later to an "estimated adjustment factor" (30% of the federal credit at 3% growth, up to 50% at 3.75%). This looks like the "trigger" missing from our snapshot. A Grant Thornton alert gives 35% as the 2025 base before the trigger, which would make the agency's 50% for 2025 a triggered value, not a statutory one.
-- **The 2026 rate.** No Department of Revenue announcement of a 2026 reduction was found. Unresolved, as before.
-- **Official text.** The Office of Legislative Legal Services has a "2026 CRS Titles for Download" page, described as current through the 2026 Second Regular Session, with uncertified HTM, PDF and DOCX files. The 2025 page says some Title 39 sections exist only as PDF. The Attorney General's site says the LexisNexis site is the only official source.
+### Amendment 87
+
+- **The text.** Read from the legislature's copy, stamped "CDOS Received: January 9, 2026 ... 2025-2026 #195 - Final Text". Section 3 amends C.R.S. 39-22-104: it ends (1.7)(c), the flat 4.40%, with tax years beginning before 1 January 2027, and adds (1.8).
+- **The brackets match what we had recorded** from The Colorado Sun: 3.70% up to $25,000; 4.20% to $100,000; 4.40% to $500,000; 7.40% to $750,000; 7.90% to $1,000,000; 8.40% above. Each rate applies only to the income in its band.
+- **One schedule for everyone.** (1.8)(a) applies to "every individual, estate, and trust". There are no filing-status thresholds.
+- **Not indexed.** The Blue Book: "Unlike the federal income tax, the new state income tax brackets are not adjusted for inflation".
+- **The base** is federal taxable income, modified by subsections (3) and (4) as before.
+- **Something we did not know about.** Proposed (1.8)(b) taxes gain on the sale of a principal residence, above the federal exclusion, at 4.40%. The engine does not model it.
+- **Still subject to 39-22-627.** (1.8)(a) opens "Except as otherwise provided in section 39-22-627", so a temporary rate change could apply to the graduated rates. How is not stated.
+- **Section 2 amends the TABOR section of the constitution**, article X, section 20 (8)(a). The Blue Book says the measure removes the single-rate requirement. Struck words do not survive conversion of the PDF to text, so exactly which words are struck was not seen. Section 4 applies the same six brackets to corporations.
+- **Certification.** The Secretary of State's page lists the measure as certified for the ballot. No certified result was found.
+
+### Earned income tax credit
+
+- **The Department's credit percentage table** ("Income Tax Topics: Earned Income Tax Credit"): 2017 to 2021, 10%; 2022, 20%; 2023, 50%; 2024, 50%; 2025, 50%; "2026 and later", 25%.
+- **2022 is now agency-backed** and agrees with the snapshot.
+- **2023 is a fifth conflict.** The snapshot says 25%. The table says 50%, and so does the 2023 form (DR 0104CR, line 5). Corrected.
+- **2027 is not recorded.** "2026 and later 25%" would fill it, and it is an agency statement. It was left out because HB24-1134 could not be read and PolicyEngine notes the percentage can rise with state revenue. This is a decision for the project owner; see roadmap item P.
+- **Who can claim.** The same page confirms the credit reaches filers the federal credit excludes: from 2020, those without a Social Security number valid for employment; from 2022, certain filers under 25 without a qualifying child. For them the credit is a percentage of the federal credit they "would have been allowed". The README now states this limit.
+
+### Rate, rounding and the tax table
+
+- **The Department's rate table** still stops at 2025 (4.4%). The 2026 rate is unresolved.
+- **The tax table.** "For individuals with Colorado taxable incomes of less than $50,000, the Department publishes tax tables which approximate the individual's Colorado tax determined at the applicable prescribed rate." The 2023 table uses $100 bands and gives the tax at the middle of each band: over $20,300 but not over $20,400 is $895, which is 20,350 times 0.044. The engine applies the rate to the exact income, so it can differ from the form by about two dollars below $50,000. This is a new limit, now in the README.
+- **Rounding.** The 2023 booklet: "Round all dollar amounts to the nearest whole dollar." Exact half dollars were not checked.
+- **A first official test.** One case in `tests/cases.json` now uses that table row and the form's 50% line.
+
+### Official statute text
+
+- The Office of Legislative Legal Services page "2026 CRS Titles for Download" says the files are "current with the changes made by amendments, additions, and repeals to Colorado Revised Statutes by the Seventy-fifth General Assembly at its Second Regular Session in 2026".
+- The files are hosted on `olls.info`; the page links `https://olls.info/crs/crs2026-title-39.pdf` for Title 39. That host was not on the allowed list, so the file was not downloaded and the current text is still not ingested.
+- From search only: the Attorney General's site says the LexisNexis site is the only official source.
 
 ## Sources
 
@@ -166,16 +232,21 @@ Read:
 - https://github.com/mhsu2112/bank-board-policy-sludge
 - https://github.com/mhsu2112/fr2052a-policy-as-code
 
-Found by search and not opened:
+Read in the second pass:
 
-- STARA paper (ICAIL 2025): https://dl.acm.org/doi/10.1145/3769126.3769219
+- STARA paper (ICAIL 2025): https://law.stanford.edu/wp-content/uploads/2025/08/STARA-Daniel-Ho.pdf
 - LaborBench paper: https://arxiv.org/abs/2603.03300
 - Amendment 87 final text: https://leg.colorado.gov/ballots/graduated-income-tax-2/files/text-of-measure
 - Amendment 87 Blue Book: https://leg.colorado.gov/ballots/graduated-income-tax-2/files/blue-book
 - Secretary of State, 2026 ballot measures: https://www.coloradosos.gov/pubs/elections/Initiatives/ballot/contacts/2026.html
 - Department of Revenue, EITC topics: https://tax.colorado.gov/income-tax-topics-earned-income-tax-credit
-- HB24-1134: https://leg.colorado.gov/bills/hb24-1134
+- Department of Revenue, Individual Income Tax Guide: https://tax.colorado.gov/individual-income-tax-guide
+- Department of Revenue, 2023 104 Book: https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf
 - 2026 CRS titles download: https://content.leg.colorado.gov/agencies/office-legislative-legal-services/2026-crs-titles-download
+
+Found by search and not opened:
+
+- HB24-1134: https://leg.colorado.gov/bills/hb24-1134
 - Attorney General on the official source: https://ag.colorado.gov/colorado-revised-statutes
 - Colorado Politics, 6 November 2026: https://www.coloradopolitics.com/2026/11/06/colorado-passes-graduated-income-tax-eliminates-flat-rate/
 - Proponents' fact sheet: https://protectcoloradosfuture.com/wp-content/uploads/2026/06/Colorado-Graduated-Income-Tax-Fact-Sheet.pdf
