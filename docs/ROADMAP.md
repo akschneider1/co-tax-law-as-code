@@ -88,7 +88,7 @@ Read from two public repositories and one open Substack post. His "Policy as cod
 
 ## Open decisions
 
-- **Licence.** None chosen. The project's own code and data need one before others can reuse them. USWDS files keep their own licences (`web/assets/uswds/LICENSE.md`).
+- **Licence.** Settled: the repository is Apache 2.0 (`LICENSE`). USWDS files keep their own licences (`web/assets/uswds/LICENSE.md`).
 - **Governance.** Deferred. `docs/research/tradeoffs-report.md` covers stewardship models and precedents.
 - **Model provider** for LangExtract runs.
 
