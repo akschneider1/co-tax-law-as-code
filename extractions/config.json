@@ -5,6 +5,18 @@
     "/us/co/crs/39-22-123.5/2/a/I"
   ],
   "example_note": "These hand-marked provisions are shown to the model as examples. They are left out of every score, because scoring them would measure copying.",
+  "core_provisions": [
+    "/us/co/crs/39-22-104/1.7/c",
+    "/us/co/crs/39-22-104/2",
+    "/us/co/crs/39-22-123.5/2/b",
+    "/us/co/crs/39-22-123.5/2/c/I",
+    "/us/co/crs/39-22-123.5/2/d/I",
+    "/us/co/crs/39-22-123.5/4",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/VI",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/b"
+  ],
+  "core_note": "The provisions that set the tax rate, the 2027 brackets and the credit's share of the federal credit for tax years 2022 on. The live demo's shorter run marks only these.",
   "parameter_by_section": {
     "/us/co/crs/39-22-104": "co.income_tax.rate_schedule",
     "/us/co/crs/39-22-123.5": "co.eitc.match_rate",
