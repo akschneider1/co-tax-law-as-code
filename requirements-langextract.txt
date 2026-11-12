@@ -1,3 +1,5 @@
 # Only needed for tools/extract_langextract.py. Requires Python 3.10 or later.
 # The rest of the project uses the standard library only.
 langextract>=1.7.2
+# Only for --model claude-...: LangExtract has no Anthropic provider, so the script calls the SDK itself.
+anthropic>=2.8.0

@@ -1,0 +1,25 @@
+{
+  "provision": "/us/co/crs/39-22-104/2",
+  "model": "gemini-3.5-flash",
+  "langextract": "1.7.2",
+  "passes": 1,
+  "with_context": true,
+  "extractions": [
+    {
+      "extraction_class": "base",
+      "extraction_text": "the federal taxable income",
+      "attributes": {},
+      "start": 107,
+      "end": 133,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "exception",
+      "extraction_text": "as provided in subsections (3) and (4) of this section",
+      "attributes": {},
+      "start": 152,
+      "end": 206,
+      "alignment_status": "match_exact"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+# Replit: press Run to start the live demo (demo/server.py) on port 5000.
+# Put model keys in the Secrets tool, never in this file:
+#   ANTHROPIC_API_KEY     for Claude models
+#   LANGEXTRACT_API_KEY   for Gemini models
+#   DEMO_ACCESS_CODE      recommended if the app is public: a run that costs money must supply it
+# With no key the demo still runs, using a stand-in that makes no model calls.
+entrypoint = "demo/server.py"
+run = "python3 demo/server.py"
+modules = ["python-3.11"]
+
+[nix]
+channel = "stable-24_05"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+run = ["python3", "demo/server.py"]
+# A run's progress is held in the memory of one server process, so deploy on
+# one always-on machine (Reserved VM), not on autoscaling instances.
+deploymentTarget = "gce"

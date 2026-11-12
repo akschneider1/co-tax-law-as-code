@@ -1,0 +1,341 @@
+                                                                                                   Blue Book
+
+      Amendment 87: Graduated Income Tax
+      Placed on the ballot by citizen initiative • Passes with a majority vote
+
+
+ 1    Amendment 87 proposes amending the Colorado Constitution and
+ 2    Colorado statutes to:
+ 3    ●   remove the constitutional requirement that the state income tax be set at a single flat rate;
+ 4    ●   replace the current flat income tax with a graduated state income tax that sets lower rates
+ 5        for lower incomes and higher rates for higher incomes;
+ 6    ●   spend the additional revenue collected from these income tax rate changes on K-12
+ 7        education, health care, and early childhood care and education; and
+ 8    ●   exempt additional revenue collected under the measure from the state’s constitutional
+ 9        revenue limit.
+
+10    What Your Vote Means
+
+ 11   YES                                                           20    NO
+ 12   A “yes” vote on Amendment 87 creates a                        21 A “no” vote on Amendment 87 keeps the
+ 13   graduated state income tax that increases                     22 current constitutional requirement for a flat
+ 14   revenue; uses the additional money for K-                     23 state income tax rate.
+ 15   12 education, health care, and early
+ 16   childhood care and education; and exempts
+ 17   additional revenue collected from the
+ 18   state’s constitutional revenue limit.
+
+ 19
+24     Summary and Analysis of Amendment 87
+25    What does Amendment 87 do?
+26    The measure replaces the state’s current flat income tax rate for individuals and businesses with
+27    a graduated income tax that lowers taxes for taxable income below $500,000 and raises taxes for
+28    taxable income above $500,000. It requires that the additional money collected from this change
+29    be spent on K-12 education, health care, and early childhood care and education, and exempts
+30    this money from the state’s constitutional revenue limit, also known as the Taxpayer’s Bill of
+31    Rights (TABOR) limit. The state must produce an audited annual report on how much additional
+32    revenue was collected and how it was spent.
+
+
+
+
+                                                                 -1-
+                                                                                        Blue Book
+33   What is the state’s current income tax structure?
+34   Since 1987, Colorado has had a flat income tax rate, in which all taxpayers, including individuals
+35   and businesses, pay the same income tax rate on their income. The state’s current flat income
+36   tax rate is 4.4 percent. The majority of state income tax revenue is used for general state
+37   programs and services. The TABOR amendment in the state constitution requires that income be
+38   taxed at a flat rate.
+39   Income tax is paid on a portion of a household’s or business’s income, which is called taxable
+40   income. For example, a married couple earning $42,000 in income per year may have about
+41   $10,000 in taxable income and owe $440 in taxes annually. A married couple earning $130,000
+42   in income per year may have about $100,000 in taxable income and owe $4,400 in taxes
+43   annually.
+44   What is the graduated income tax structure proposed in Amendment 87?
+45   Amendment 87 removes the constitutional requirement that income be taxed at a flat rate and
+46   creates a graduated income tax starting in 2027. In this graduated tax system, an individual’s or
+47   business’s income is split into six ranges—called brackets—with the lowest income tax bracket
+48   taxed at the lowest rate and each higher bracket taxed at increasing rates, as shown in Table 1.
+49   This is similar to how the federal income tax works. Unlike the federal income tax, the new state
+50   income tax brackets are not adjusted for inflation, so more of taxpayers’ incomes will fall into
+51   the higher brackets over time. Each tax rate is only applied to the portion of taxable income that
+52   falls into that bracket.
+
+53                                           Table 1
+54              Graduated Income Tax Rates by Income Bracket Under Amendment 87
+
+                                                            Current   Amendment 87
+      Taxable Income Bracket                               Tax Rate        Tax Rate          Difference
+      $25,000 or less                                          4.4%            3.7%                 -0.7
+      $25,001 to $100,000                                      4.4%            4.2%                 -0.2
+      $100,001 to $500,000                                     4.4%            4.4%                  0.0
+      $500,001 to $750,000                                     4.4%            7.4%                +3.0
+      $750,001 to $1,000,000                                   4.4%            7.9%                +3.5
+      More than $1,000,000                                     4.4%            8.4%                +4.0
+
+55   For example, as shown in Figure 1 below, an individual or business earning $125,000 a year in
+56   taxable income is taxed at a rate of 3.7 percent for the first $25,000. The next portion of taxable
+57   income between $25,000 and $100,000 is taxed at a rate of 4.2 percent. The remaining $25,000
+58   is taxed at the rate of 4.4 percent. The total tax owed under the measure would be $5,175, or
+59   $325 less than the $5,500 they would owe under current law.
+
+
+
+
+                                                     -2-
+                                                                                         Blue Book
+60                                           Figure 1
+61           Tax Rates and Taxes Owed for a Taxpayer with $125,000 in Taxable Income
+      $125,000
+                                                               $100,001 to
+                                                                                $25,000 x 4.4% = $1,100
+                                                                $125,000
+      $100,000
+
+
+       $75,000
+                       $125,000      x 4.4% = $5,500            $25,001 to      $75,000 x 4.2% = $3,150
+                                                                 $100,000
+       $50,000
+
+
+       $25,000
+                                                                                $25,000 x 3.7% = $925
+                                            $5,500            First $25,000           $5,175
+            $0
+                     Current Law          Current Law         Amendment 87       Amendment 87
+                   Taxable Income         Taxes Owed          Taxable Income      Taxes Owed
+62
+
+63   How does Amendment 87 change the amount of taxes owed?
+64   For individuals and businesses with taxable incomes of less than $500,000, the measure
+65   decreases the amount of income taxes owed, up to a maximum reduction of $325 per taxpayer.
+66   For taxpayers with incomes of about $500,000 and above, the measure increases the amount of
+67   income taxes owed.
+68   Table 2 shows an example of taxes owed under the measure and under current law for seven
+69   hypothetical taxpayers with different levels of taxable income.
+
+70                                           Table 2
+71                       Taxes Owed Under Current Law and Amendment 87
+
+      Example                              Current             Amendment 87               Difference in
+      Taxable Income              Income Tax Owed            Income Tax Owed          Income Tax Owed
+      $25,000                               $1,100                       $925                    -$175
+      $62,500                               $2,750                     $2,500                    -$250
+      $125,000                              $5,500                     $5,175                    -$325
+      $300,000                             $13,200                    $12,875                    -$325
+      $550,000                             $24,200                    $25,375                  +$1,175
+      $625,000                             $27,500                    $30,925                  +$3,425
+      $875,000                             $38,500                    $50,050                 +$11,550
+      $2,000,000                           $88,000                   $143,925                 +$55,925
+
+
+
+
+                                                       -3-
+                                                                                          Blue Book
+ 72   How does Amendment 87 change state revenue?
+ 73   By changing tax rates for individuals and businesses, Amendment 87 is expected to increase
+ 74   state income tax revenue by an estimated $2 billion in the first full year and more in later years.
+ 75   However, actual revenue collections may be more or less than this estimate depending on
+ 76   economic conditions and other factors.
+ 77   The change in state revenue under the measure is calculated as the difference between the
+ 78   actual income tax revenue collected under the measure’s graduated income tax rates and the
+ 79   income tax revenue that would have been collected under the state’s current rate of 4.4 percent.
+ 80   See the Fiscal Impact section below for additional detail.
+ 81   Does Amendment 87 impact TABOR refunds?
+ 82   The measure has no impact on current TABOR refunds or TABOR refund mechanisms. Under
+ 83   current law, the state is expected to collect $15 billion in income tax revenue in 2028. Under this
+ 84   measure, it is expected to collect $2 billion more in income tax revenue, for a total of $17 billion.
+ 85   The additional $2 billion is exempt from the TABOR limit. The TABOR limit and the amount of
+ 86   revenue subject to the limit remain the same, and estimated TABOR refunds will not change. For
+ 87   additional information, see the LCS memorandum titled, “A Brief Overview of the TABOR
+ 88   Revenue Limit.”1
+ 89   How will the additional revenue be spent?
+ 90   The increased revenue collected under Amendment 87 must be spent on K-12 education, health
+ 91   care, and early childhood care and education. It must add to, and not replace, spending on
+ 92   those services. The state legislature will decide what specific programs will receive additional
+ 93   funding and how much.
+ 94   What happens if Amendment 87 and Proposition 136 both pass?
+ 95   Proposition 136 limits the state income tax rate at the current law rate of 4.4 percent. If both
+ 96   Amendment 87 and Proposition 136 are approved by voters, the proposed tax rates for income
+ 97   over $500,000 in Amendment 87 would be higher than the 4.4 percent limit in Proposition 136.
+ 98   Generally, when parts of voter-approved measures conflict, the policy outcome is determined by
+ 99   the measure that received more votes. However, if both measures are approved by voters, the
+100   exact outcome is unclear. The state legislature or a court will need to determine how to resolve
+101   any conflicts.
+
+
+102   Arguments For Amendment 87
+103   1) Amendment 87 cuts taxes for 97 percent of taxpayers, including most households and small
+104      businesses, while increasing taxes only for top earners who have the ability to pay. A
+105      graduated income tax is more equitable than a flat tax because it recognizes a fundamental
+106      economic reality: each dollar taxed on someone earning $30,000 imposes a far greater
+
+      1 Online at: leg.colorado.gov/bluebook
+
+
+
+
+                                                      -4-
+                                                                                       Blue Book
+107      hardship than each dollar taxed on someone earning $1 million. By aligning tax rates with
+108      taxpayers’ financial means, a graduated tax distributes the burden more justly across all
+109      income levels, lowers taxes for most households and small businesses, and puts more money
+110      in the hands of working families who will spend it in their local communities.
+111   2) The measure funds critical services at a time when additional funding is desperately needed.
+112      Crucial programs are at risk of further cuts because of changes in federal policy. Revenue
+113      from the graduated tax will fund education, health care, and child care, public services that
+114      many Colorado households rely on. Colorado public schools are significantly underfunded,
+115      and constraints on the state budget make Medicaid cuts increasingly likely. Additional
+116      funding will provide more security for the people who depend on these services.
+117   3) The graduated income tax is not an experiment, but a proven approach for funding essential
+118      public services. The federal government and 27 other states already have a graduated
+119      income tax. This tax structure lessens rising wealth inequality and increases funding for state
+120      programs. Sales and property taxes place greater burdens on lower-income households, and
+121      a graduated income tax corrects for this inequity while also funding services for all
+122      Coloradans.
+
+
+123   Arguments Against Amendment 87
+124   1) The measure is a multibillion-dollar tax increase, and hiking taxes on higher incomes will
+125      harm Colorado’s economy. Higher tax rates make Colorado a less competitive place to start
+126      and grow a business, and may encourage some high earners to leave the state entirely.
+127      When businesses and high-earning individuals relocate, people at all income levels may lose
+128      their jobs. Further, because the brackets do not increase with inflation, more and more
+129      taxpayers will pay these higher taxes each year. Colorado cannot risk employers and jobs
+130      fleeing the state because our taxes are too high. Keeping taxes competitive for everyone
+131      fuels economic activity and builds a stronger, more prosperous Colorado for all.
+132   2) The measure is an attack on the fair and predictable tax system that TABOR currently
+133      guarantees. The state’s current flat tax is fair because everyone has equal access to state
+134      services, high-income earners already pay more taxes, and low-income earners qualify for
+135      more tax deductions and credits. The state should better prioritize the tens of billions of
+136      dollars it already collects, rather than switch to a new, complicated tax system.
+137   3) The measure will permanently expand the size of government, increase careless and wasteful
+138      spending of taxpayer dollars, and hinder economic growth. Instead of spending billions of
+139      dollars more on broadly defined government services, state policy should focus on lowering
+140      taxes for everyone or funding specific programs that are proven to help Colorado’s
+141      residents.
+
+
+
+
+                                                     -5-
+                                                                                                      Blue Book
+
+142              Information about the organizations supporting and opposing this measure is
+143                         available on the Colorado Secretary of State's website:
+
+144                www.coloradosos.gov/pubs/elections/Initiatives/ballot/contacts/2026.html
+
+
+145   Fiscal Impact of Amendment 87
+146   Taxpayer Impacts
+147   Amendment 87 will decrease the amount of income tax owed by taxpayers with Colorado
+148   taxable income of less than $510,834 and increase the amount of income tax owed by taxpayers
+149   with Colorado taxable income of $510,834 and above. State law requires Legislative Council Staff
+150   to estimate the potential tax burden on affected taxpayers within specified federal adjusted
+151   gross income categories. Federal adjusted gross income is total income from all sources, with
+152   certain adjustments, as determined when filing federal income taxes. Colorado taxable income,
+153   calculated when filing state income taxes, is based on federal adjusted gross income with
+154   additional adjustments required or allowed under state law. Table 3 shows the expected change
+155   in tax burden by federal adjusted gross income category. The measure has no impact on current
+156   TABOR refunds or TABOR refund mechanisms.
+
+157                                                  Table 3
+158                                  Estimated Impact on Taxpayers by Income
+
+                                              Estimated Number             Total Change in       Average Change in
+       Income Category                              of Taxpayers               Tax Burden              Tax Burden
+       $14,999 or less                                     579,309                -$638,951                        -$1
+       $15,000 to $29,999                                  408,924             -$16,093,434                       -$39
+       $30,000 to $39,999                                  272,616             -$29,611,480                      -$109
+       $40,000 to $49,999                                  238,539             -$38,651,945                      -$162
+       $50,000 to $69,999                                  443,000             -$85,925,358                      -$194
+       $70,000 to $99,999                                  408,912             -$93,232,609                      -$228
+       $100,000 to $149,999                                408,912            -$115,554,178                      -$283
+       $150,000 to $199,999                                238,532             -$77,522,900                      -$325
+       $200,000 to $249,000                                102,228             -$33,224,100                      -$325
+       $250,000 to $499,999                                204,456             -$66,448,200                      -$325
+       $500,000 to $999,999                                 55,900             -$15,893,609                      -$284
+       $1,000,000 or more                                   46,328           $1,208,468,497                  +$26,085
+
+159   Income is federal adjusted gross income, not Colorado taxable income; therefore, the income ranges and tax rates do
+160   not align with those in Table 2. The estimated number of taxpayers column counts joint filers as one taxpayer.
+161   Estimates are based on Colorado Department of Revenue data for all residents for tax year 2023 and Legislative
+162   Council Staff estimates.
+
+
+                                                             -6-
+                                                                                        Blue Book
+163   State Revenue
+164   By replacing the state flat income tax with a graduated income tax, the measure increases
+165   revenue from income taxes by an estimated $958.4 million in budget year 2026-27, $1.972
+166   billion in budget year 2027-28, and increasing amounts in future years based on income and
+167   population growth. The estimate for budget year 2026-27 represents a half-year impact for tax
+168   year 2027. The additional revenue will be credited to the Colorado Future’s Account created in
+169   the measure. The increased revenue is exempt from TABOR as a voter-approved revenue
+170   change. The state budget year begins each July 1 and ends on June 30.
+171   State law requires Legislative Council Staff to include an estimate of the maximum dollar amount
+172   of the change in state government revenue for the first full fiscal year of a proposed tax
+173   increase. This is the number that appears in the ballot question. The estimates in the previous
+174   paragraph represent the revenue impact of the measure under the current Legislative Council
+175   Staff revenue forecast. Based on forecast error that could occur, the maximum dollar amount of
+176   the change in state government revenue and fiscal year spending for budget year 2027-28 is
+177   estimated as an increase of $2.7 billion.
+178   State Spending
+179   The measure increases the amount of state revenue available to spend for the purposes
+180   identified in the measure, including K-12 education, health care, and early childhood care and
+181   education, in FY 2026-27 and future fiscal years. To administer the tax rate change, the measure
+182   is expected to increase one-time spending in the Department of Revenue by $98,000.
+183   School District Revenue and Spending
+184   The measure increases available state funding to school districts. The exact amount distributed
+185   to school districts will depend on decisions made by the General Assembly when allocating
+186   money from the Colorado Future’s Account.
+
+187   State Spending and Tax Increases
+188   Article X, Section 20, of the Colorado Constitution requires that the following fiscal information
+189   be provided when a tax increase question is on the ballot:
+190   ●   estimates or actual amounts of state fiscal year spending for the current year and each of the
+191       past four years with the overall percentage and dollar change; and
+192   ●   for the first full year of the proposed tax increase, estimates of the maximum dollar amount
+193       of the tax increase and of fiscal year spending without the increase.
+194   “Fiscal year spending” is a legal term in the Colorado Constitution. It equals the amount of
+195   revenue subject to the constitutional spending limit that the state or a district is permitted to
+196   keep and either spend or save for a single year. Table 4 shows state fiscal year spending for the
+197   current year and each of the past four years.
+
+
+
+
+                                                     -7-
+                                                                                                     Blue Book
+198                                                       Table 4
+199                                             State Fiscal Year Spending
+
+                                     Actual             Actual           Actual           Actual        Estimated
+       Fiscal Year              FY 2022-23         FY 2023-24       FY 2024-25       FY 2025-26        FY 2026-27
+       Fiscal Year
+                               $16.66 billion     $18.07 billion   $19.15 billion   $19.91 billion    $20.50 billion
+       Spending
+200   Four-Year Dollar Change in State Spending: $3.85 billion
+201   Four-Year Percent Change in State Spending: 23.1 percent
+
+202   Table 5 shows the maximum revenue expected from the income tax increase in Amendment 87
+203   for FY 2027-28, the first full fiscal year for which the tax increase would be in place, and an
+204   estimate of state fiscal year spending without the tax increase.
+
+205                                              Table 5
+206           Estimated State Fiscal Year Spending and the Proposed Tax Revenue Increase
+
+                                                                                      FY 2027-28 Estimate
+             Fiscal Year Spending Without the Tax Increase                                     $24.62 billion
+             Revenue Increase from Increased Income Taxes                                        $2.7 billion
+207
+
+
+
+
+                                                            -8-
+

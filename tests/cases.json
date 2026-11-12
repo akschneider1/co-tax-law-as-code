@@ -1,6 +1,6 @@
 {
   "about": "Engine-independent test corpus: facts in, expected whole-dollar results out. Any engine that reads the same facts should reproduce these numbers.",
-  "basis_note": "Every case is 'derived': expected values were worked by hand from the parameter files. None comes from an official form example or a Department of Revenue test scenario, so the corpus checks the engine against the parameters, not the parameters against the law.",
+  "basis_note": "Cases marked 'derived' were worked by hand from the parameter files, so they check the engine against the parameters, not the parameters against the law. Cases marked 'official' take their tax and credit figures from a Department of Revenue booklet. The printed tax tables are tested row by row from tests/tax_tables.json. No case comes from a Department of Revenue test scenario.",
   "cases": [
     {
       "id": "2022-flat-rate-with-credit",
@@ -13,6 +13,13 @@
       "basis": "derived",
       "facts": {"tax_year": 2023, "colorado_taxable_income": 50000},
       "expect": {"income_tax_before_credits": "2200", "co_eitc": "0", "net_tax_after_eitc": "2200"}
+    },
+    {
+      "id": "2023-official-tax-table-row-and-credit-line",
+      "basis": "official",
+      "note": "From the Department of Revenue's 2023 104 Book (https://tax.colorado.gov/sites/tax/files/documents/Book0104_2023.pdf, read 2026-11-11). The 2023 Colorado Income Tax Table gives $895 for taxable income over $20,300 but not over $20,400; the income used here is the middle of that band, where the table and the exact rate agree. Form DR 0104CR line 5 reads 'COEITC, multiply line 4 by 50% (0.50)'. The net figure is derived from those two.",
+      "facts": {"tax_year": 2023, "colorado_taxable_income": 20350, "federal_eitc": 1000},
+      "expect": {"income_tax_before_credits": "895", "co_eitc": "500", "net_tax_after_eitc": "395"}
     },
     {
       "id": "2024-temporary-rate-and-50-percent-credit",
@@ -97,6 +104,53 @@
       "basis": "derived",
       "facts": {"tax_year": 2025, "colorado_taxable_income": -5},
       "expect_error": "invalid_facts"
+    },
+    {
+      "id": "2023-net-built-on-form-table",
+      "basis": "official",
+      "note": "2023 tax table: over $19,900 but not over $20,000 is $878. The statutory amount on $20,000 is $880.",
+      "facts": {"tax_year": 2023, "colorado_taxable_income": 20000, "federal_eitc": 1000, "tax_method": "form"},
+      "expect": {"income_tax_before_credits": "880", "income_tax_form_table": "878", "co_eitc": "500", "net_tax_after_eitc": "378"}
+    },
+    {
+      "id": "2025-over-50000-form-equals-statute",
+      "basis": "derived",
+      "note": "Above $50,000 the form's worksheet applies the rate to the income.",
+      "facts": {"tax_year": 2025, "colorado_taxable_income": 80000, "tax_method": "form"},
+      "expect": {"income_tax_before_credits": "3520", "income_tax_form_table": "3520", "net_tax_after_eitc": "3520"}
+    },
+    {
+      "id": "2026-form-method-without-a-table",
+      "basis": "derived",
+      "note": "No 2026 tax table is recorded, so a net figure built on the form must be refused.",
+      "facts": {"tax_year": 2026, "colorado_taxable_income": 20000, "tax_method": "form"},
+      "expect_error": "parameter_unavailable"
+    },
+    {
+      "id": "2025-credit-for-filer-under-25",
+      "basis": "derived",
+      "note": "The federal amount is the credit that would have been allowed; the same percentage applies.",
+      "facts": {"tax_year": 2025, "colorado_taxable_income": 10000, "federal_eitc": 649, "federal_eitc_basis": "under_25"},
+      "expect": {"co_eitc": "325"}
+    },
+    {
+      "id": "unknown-credit-basis-rejected",
+      "basis": "derived",
+      "facts": {"tax_year": 2025, "colorado_taxable_income": 10000, "federal_eitc": 649, "federal_eitc_basis": "other"},
+      "expect_error": "invalid_facts"
+    },
+    {
+      "id": "2027-principal-residence-gain-refused",
+      "basis": "derived",
+      "note": "Proposed 39-22-104(1.8)(b) taxes this gain at a separate rate and is not modelled.",
+      "facts": {"tax_year": 2027, "colorado_taxable_income": 600000, "taxable_principal_residence_gain": 50000},
+      "expect_error": "out_of_scope"
+    },
+    {
+      "id": "2027-no-principal-residence-gain",
+      "basis": "derived",
+      "facts": {"tax_year": 2027, "colorado_taxable_income": 600000, "taxable_principal_residence_gain": 0},
+      "expect": {"income_tax_before_credits": "29075", "income_tax_form_table": null}
     }
   ]
 }

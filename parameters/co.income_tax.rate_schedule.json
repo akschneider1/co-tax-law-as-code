@@ -19,7 +19,8 @@
           "kind": "agency",
           "publisher": "Colorado Department of Revenue",
           "url": "https://tax.colorado.gov/individual-income-tax-guide",
-          "quote": "| 2022 | 4.4% | ... | 2023 | 4.4% |",
+          "snapshot": "dor-individual-income-tax-guide",
+          "quote": "2022 4.4% 2023 4.4%",
           "retrieved": "2026-11-11",
           "states": [{"over": "0", "rate": "0.044"}]
         }
@@ -40,7 +41,8 @@
           "kind": "agency",
           "publisher": "Colorado Department of Revenue",
           "url": "https://tax.colorado.gov/individual-income-tax-guide",
-          "quote": "| 2024 | 4.25% |",
+          "snapshot": "dor-individual-income-tax-guide",
+          "quote": "2024 4.25%",
           "retrieved": "2026-11-11",
           "states": [{"over": "0", "rate": "0.0425"}]
         }
@@ -62,7 +64,8 @@
           "kind": "agency",
           "publisher": "Colorado Department of Revenue",
           "url": "https://tax.colorado.gov/individual-income-tax-guide",
-          "quote": "| 2025 | 4.4% |",
+          "snapshot": "dor-individual-income-tax-guide",
+          "quote": "2025 4.4%",
           "retrieved": "2026-11-11",
           "states": [{"over": "0", "rate": "0.044"}]
         }
@@ -96,6 +99,34 @@
       "status": "reported_passed_uncertified",
       "sources": [
         {
+          "kind": "measure_text",
+          "publisher": "Colorado Legislative Council Staff (file stamped 'CDOS Received: January 9, 2026', initiative 2025-2026 #195, final text)",
+          "url": "https://leg.colorado.gov/ballots/graduated-income-tax-2/files/text-of-measure",
+          "snapshot": "co-2026-amendment-87-text",
+          "ref": "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/VI",
+          "locator": "Section 3, proposed C.R.S. 39-22-104 (1.8)(a)(I) to (VI)",
+          "quote": "WITH RESPECT TO TAXABLE YEARS COMMENCING ON OR AFTER JANUARY 1, 2027, A GRADUATED TAX IS IMPOSED ON FEDERAL TAXABLE INCOME",
+          "retrieved": "2026-11-11",
+          "sha256": "d08086dae40c7ba3ba70ae265a097976d42e7c0ab1235f0bf2940d10cdb36802",
+          "states": [
+            {"over": "0", "rate": "0.037"},
+            {"over": "25000", "rate": "0.042"},
+            {"over": "100000", "rate": "0.044"},
+            {"over": "500000", "rate": "0.074"},
+            {"over": "750000", "rate": "0.079"},
+            {"over": "1000000", "rate": "0.084"}
+          ]
+        },
+        {
+          "kind": "official_analysis",
+          "publisher": "Colorado Legislative Council Staff, 2026 Blue Book, Amendment 87",
+          "url": "https://leg.colorado.gov/ballots/graduated-income-tax-2/files/blue-book",
+          "snapshot": "co-2026-amendment-87-blue-book",
+          "quote": "income tax brackets are not adjusted for inflation",
+          "retrieved": "2026-11-11",
+          "sha256": "57fb6e938fc3804f1ee0e089124a9b4e380ae5f77bdbefbdbfd89ec78a591d22"
+        },
+        {
           "kind": "news",
           "publisher": "The Colorado Sun",
           "url": "https://coloradosun.com/2026/11/06/amendment-87-results-passes-graduated-income-tax/",
@@ -103,7 +134,7 @@
           "summary": "Amendment 87 (2026): 3.7% to $25,000; 4.2% to $100,000; 4.4% to $500,000; 7.4% to $750,000; 7.9% to $1 million; 8.4% above; tax years beginning on or after 1 January 2027."
         }
       ],
-      "caveat": "Election result was unofficial and uncertified as of 2026-11-11. The measure's text has not been ingested. Unknown: whether thresholds differ by filing status, whether they are indexed to inflation, which income base they apply to, and how they interact with temporary rate reductions. One schedule is applied to every filer."
+      "caveat": "Election result was unofficial and uncertified as of 2026-11-11; no certification was found. The brackets are derived from the measure's proposed (1.8)(a), ingested in text/co-2026-amendment-87.xml. The text sets one schedule for every individual, estate and trust, with no filing-status thresholds, and the Blue Book says the brackets are not adjusted for inflation. The base is federal taxable income as modified by 39-22-104 (3) and (4). Not modelled: proposed (1.8)(b), which taxes certain gain on the sale of a principal residence at 4.40% (the engine refuses a filer who reports such gain), and any temporary rate change under section 39-22-627, to which (1.8)(a) is expressly subject."
     }
   ]
 }
