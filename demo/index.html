@@ -57,27 +57,27 @@ fieldset { border: 0; padding: 0; margin: 0; }
       </div>
     </div>
     <h1 class="font-heading-xl margin-top-3 margin-bottom-1">Watch a model mark the statute</h1>
-    <p class="usa-intro margin-top-0 maxw-tablet-lg">A model reads each provision and marks the words that carry a tax rule: the years, the number, who it applies to. Every mark is checked against the statute's own words, then turned into a value for each tax year and set beside the Department of Revenue's figure and PolicyEngine's. Press Run to see it happen.</p>
-    <p><a class="usa-link" href="viewer/">See how each year's value is built from the statute text</a></p>
+    <p class="usa-intro margin-top-0 maxw-tablet-lg">A model reads each provision and marks spans: exact phrases that carry a tax rule, such as the years, the number and who it applies to. Each span is checked against the statute, then the spans are turned into a value for each tax year and compared with the Department of Revenue's and PolicyEngine's.</p>
+    <p><a class="usa-link" href="viewer/">Explore the statute text and how each year's value is built</a></p>
 
     <div class="grid-row grid-gap margin-top-2">
       <section class="desktop:grid-col-4 margin-bottom-3" aria-labelledby="run-h">
         <div class="border border-base-lighter radius-md padding-2 bg-white">
-          <h2 class="font-heading-lg margin-top-0" id="run-h">Run</h2>
+          <h2 class="font-heading-lg margin-top-0" id="run-h">Set up a run</h2>
           <form id="form" class="usa-form maxw-none">
             <label class="usa-label margin-top-0" for="model">Model</label>
             <select class="usa-select" id="model" name="model"></select>
             <p class="usa-hint font-body-3xs margin-top-05" id="model-hint"></p>
 
-            <label class="usa-label" for="runs">Number of runs</label>
+            <label class="usa-label" for="runs">How many times to run it</label>
             <span class="usa-hint font-body-3xs" id="runs-hint"></span>
             <input class="usa-input usa-input--small" id="runs" name="runs" type="number" min="1" value="1" aria-describedby="runs-hint">
 
             <fieldset class="usa-fieldset margin-top-3">
-              <legend class="usa-legend margin-top-0">Provisions to mark</legend>
+              <legend class="usa-legend margin-top-0">Which provisions</legend>
               <div class="usa-radio">
                 <input class="usa-radio__input" id="scope-core" type="radio" name="scope" value="core" checked>
-                <label class="usa-radio__label" for="scope-core" id="scope-core-label">Only those that set the rate, the brackets and the credit share</label>
+                <label class="usa-radio__label" for="scope-core" id="scope-core-label">The provisions that set the rate, the brackets and the credit share</label>
               </div>
               <div class="usa-radio">
                 <input class="usa-radio__input" id="scope-all" type="radio" name="scope" value="all">
@@ -87,37 +87,37 @@ fieldset { border: 0; padding: 0; margin: 0; }
 
             <div class="usa-checkbox margin-top-2">
               <input class="usa-checkbox__input" id="context" type="checkbox" name="context" checked>
-              <label class="usa-checkbox__label" for="context">Send context with each provision</label>
+              <label class="usa-checkbox__label" for="context">Give the model context for each provision</label>
             </div>
-            <p class="usa-hint font-body-3xs margin-top-05">Context is the heading, the lead-in text above the provision, later provisions that modify it, and the text it refers to.</p>
+            <p class="usa-hint font-body-3xs margin-top-05">Context is what a reader would see around the provision: its heading, the sentence it completes, later provisions that change it, and the text it refers to.</p>
 
             <div id="code-wrap" hidden>
               <label class="usa-label" for="code">Access code</label>
-              <span class="usa-hint font-body-3xs">Needed to run a model that costs money.</span>
+              <span class="usa-hint font-body-3xs">Runs that call a paid model need the code from the person hosting this demo.</span>
               <input class="usa-input" id="code" name="code" type="password" autocomplete="off">
             </div>
 
             <p class="font-body-2xs margin-top-3 margin-bottom-0" id="cost"></p>
             <div class="margin-top-2">
-              <button class="usa-button" type="submit" id="go">Run</button>
-              <button class="usa-button usa-button--outline" type="button" id="stop" hidden>Stop</button>
+              <button class="usa-button" type="submit" id="go">Start run</button>
+              <button class="usa-button usa-button--outline" type="button" id="stop" hidden>Stop run</button>
             </div>
           </form>
           <div id="message" role="alert" aria-live="assertive"></div>
         </div>
 
         <div class="border border-base-lighter radius-md padding-2 bg-white margin-top-2" id="results" hidden>
-          <h2 class="font-heading-lg margin-top-0">Results</h2>
+          <h2 class="font-heading-lg margin-top-0">Progress and checks</h2>
           <p class="margin-top-0 margin-bottom-1 font-body-2xs" id="status" aria-live="polite"></p>
           <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar" aria-label="Progress"><i id="bar-fill"></i></div>
           <div class="usa-table-container--scrollable margin-top-2" tabindex="0">
             <table class="usa-table usa-table--borderless usa-table--compact margin-0 font-body-2xs">
               <caption class="usa-sr-only">Checks on the spans from each run</caption>
-              <thead><tr><th scope="col">Run</th><th scope="col">Spans returned</th><th scope="col">Word for word</th><th scope="col">Failed re-parse</th></tr></thead>
+              <thead><tr><th scope="col">Run</th><th scope="col">Spans marked</th><th scope="col">Exact quotes</th><th scope="col">Unreadable</th></tr></thead>
               <tbody id="scores"></tbody>
             </table>
           </div>
-          <p class="font-body-3xs text-base-dark margin-top-1">Word for word: spans found exactly in the statute; any other span is dropped. Failed re-parse: spans marked as tax years, a percentage or a dollar amount whose words ordinary code could not read as one.</p>
+          <p class="font-body-3xs text-base-dark margin-top-1">Exact quotes: spans that appear word for word in the statute. Any other span is dropped. Unreadable: spans marked as tax years, a percentage or a dollar amount that could not be read as one, so they are left out of the values below.</p>
           <p class="font-body-2xs margin-bottom-0" id="stability"></p>
         </div>
       </section>
@@ -125,19 +125,19 @@ fieldset { border: 0; padding: 0; margin: 0; }
       <section class="desktop:grid-col-8" aria-labelledby="prov-h">
         <div class="border border-base-lighter radius-md padding-2 bg-white">
           <h2 class="font-heading-lg margin-top-0" id="prov-h">Provisions</h2>
-          <p class="legend margin-y-1" id="legend"><span class="font-body-xs text-base-dark margin-right-1">Marked spans:</span></p>
-          <p class="font-body-3xs text-base-dark margin-top-0">A dashed outline is a span whose dates or number did not re-parse from its words. Hover over a span to see what it was read as.</p>
+          <p class="legend margin-y-1" id="legend"><span class="font-body-xs text-base-dark margin-right-1">Kinds of span:</span></p>
+          <p class="font-body-3xs text-base-dark margin-top-0">Point at a span to see what it was read as. A dashed outline means its dates or number could not be read.</p>
           <div id="run-tabs"></div>
-          <div id="provs"><p class="text-base-dark">Nothing has run yet. Choose a model and press Run.</p></div>
+          <div id="provs"><p class="text-base-dark">No run yet. Choose a model and select Start run. Each provision will appear here with its spans highlighted.</p></div>
         </div>
       </section>
     </div>
 
     <section class="margin-top-3" aria-labelledby="values-h" id="values" hidden>
       <div class="border border-base-lighter radius-md padding-2 bg-white">
-        <h2 class="font-heading-lg margin-top-0" id="values-h">What the model's marks say, year by year</h2>
-        <p class="maxw-tablet-lg margin-top-0">Each value in the first column is built only from the spans this run marked: the tax years, the number and, for 2027, the bracket thresholds. Beside it are the value this project uses, which is the Department of Revenue's where it publishes one, and the value in PolicyEngine's Colorado model.</p>
-        <div class="usa-alert usa-alert--info usa-alert--slim usa-alert--no-icon margin-y-2"><div class="usa-alert__body"><p class="usa-alert__text">A difference is not always the model's mistake. The statute text here is an unofficial copy that is known to be out of date, so a model that reads it faithfully will disagree with the Department for some years.</p></div></div>
+        <h2 class="font-heading-lg margin-top-0" id="values-h">The values those spans give, by tax year</h2>
+        <p class="maxw-tablet-lg margin-top-0">The first column is built only from the spans this run marked. The second is the value this project uses, which is the Department of Revenue's where it has published one. The third is the value in PolicyEngine's Colorado model.</p>
+        <div class="usa-alert usa-alert--info usa-alert--slim usa-alert--no-icon margin-y-2"><div class="usa-alert__body"><p class="usa-alert__text">"Differs" does not mean the model got it wrong. The statute text here is an unofficial copy that is out of date for some years, so a model that reads it correctly will still differ from the Department.</p></div></div>
         <div id="value-tables"></div>
         <p class="font-body-3xs text-base-dark margin-bottom-0" id="values-foot"></p>
       </div>
@@ -146,7 +146,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 </main>
 
 <footer class="grid-container-widescreen padding-y-3 border-top border-base-lighter">
-  <p class="font-body-3xs text-base-dark margin-0">Statute text is an unofficial copy and is known to be out of date in five places. Model keys stay on the server and are never sent to this page.</p>
+  <p class="font-body-3xs text-base-dark margin-0">The statute text is an unofficial copy and is out of date for five year-values. Model keys stay on the server and are never sent to this page.</p>
 </footer>
 
 <script src="assets/uswds/js/uswds.min.js"></script>
@@ -195,13 +195,13 @@ fieldset { border: 0; padding: 0; margin: 0; }
   function scope() { return $("scope-all").checked ? "all" : "core"; }
   function describe() {
     var m = selected(), n = (scope() === "all" ? C.provisions_all : C.provisions_core), runs = parseInt($("runs").value, 10) || 1;
-    $("model-hint").textContent = m.ready ? "" : "Not available on this server: " + m.why + ".";
+    $("model-hint").textContent = m.ready ? "" : m.label + " is not set up on this server: " + m.why + ".";
     $("go").disabled = !m.ready || !!C.running;
     $("code-wrap").hidden = !(C.needs_code && m.id !== "stand-in");
     $("cost").textContent = m.id === "stand-in"
-      ? "The replay makes no model calls and costs nothing. It plays back stored marks, so it shows the pipeline and nothing new about a model."
-      : "Up to " + (n * runs) + " model calls (" + n + " provisions × " + runs + (runs === 1 ? " run" : " runs") +
-        "). Results already cached are not called again. This server will make " + C.calls_left + " more calls before it must be restarted.";
+      ? "Free. No model is called: this plays back spans saved earlier, so you can see how the page works."
+      : "Up to " + (n * runs) + " paid model calls: " + n + " provisions, " + runs + (runs === 1 ? " time" : " times") +
+        ". Results saved from an earlier run are reused at no cost. This demo has " + C.calls_left + " calls left.";
   }
 
   function marked(text, spans) {
@@ -209,7 +209,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     spans.forEach(function (s) {
       if (s.s < pos) return;
       if (s.s > pos) box.appendChild(document.createTextNode(text.slice(pos, s.s)));
-      var tip = s.c + (meaning(s) ? ": " + meaning(s) : "") + (s.i ? ". Did not re-parse from its words" : "");
+      var tip = s.c + (meaning(s) ? ": " + meaning(s) : "") + (s.i ? ". Could not be read as " + (s.c === "period" ? "tax years" : s.c === "value" ? "a percentage" : "a dollar amount") : "");
       box.appendChild(h("mark", { class: "sp sp-" + s.c + (s.i ? " issue" : ""), title: tip }, text.slice(s.s, s.e)));
       pos = s.e;
     });
@@ -231,7 +231,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
   };
   function agree(flag) {
     if (flag === null) return null;
-    return h("span", { class: "usa-tag margin-left-1 " + (flag ? "bg-success-dark" : "bg-secondary-dark") }, flag ? "Same as the model" : "Differs");
+    return h("span", { class: "usa-tag margin-left-1 " + (flag ? "bg-success-dark" : "bg-secondary-dark") }, flag ? "Matches" : "Differs");
   }
   function drawValues() {
     var tables = job.values[job.shown], box = $("value-tables");
@@ -243,12 +243,12 @@ fieldset { border: 0; padding: 0; margin: 0; }
       reached = reached && t.policyengine_reached;
       var body = h("tbody");
       t.rows.forEach(function (r) {
-        var model = r.model_conflict ? "Provisions disagree" : (rateLabel(r.model) || r.model_note || "Nothing marked for this year");
+        var model = r.model_conflict ? "Provisions disagree" : (rateLabel(r.model) || r.model_note || "No value: nothing marked covers this year");
         var from = r.model_from.length ? h("div", { class: "font-body-3xs text-base-dark" }, "from " + r.model_from.join("; ")) : null;
         var used = r.used ? h("span", null, rateLabel(r.used)) : h("span", { class: "text-base-dark" }, "Not recorded");
         var usedCell = h("td", null, used, r.used ? agree(r.agrees_used) : null,
           STATUS[r.status] ? h("div", { class: "font-body-3xs text-base-dark" }, STATUS[r.status]) : null);
-        var pe = !t.policyengine_reached ? h("span", { class: "text-base-dark" }, "Could not be reached")
+        var pe = !t.policyengine_reached ? h("span", { class: "text-base-dark" }, "Not available")
           : r.policyengine ? h("span", null, rateLabel(r.policyengine)) : h("span", { class: "text-base-dark" }, "No value");
         var peCell = h("td", null, pe, r.policyengine ? agree(r.agrees_policyengine) : null,
           r.policyengine && r.policyengine_since < r.year ? h("div", { class: "font-body-3xs text-base-dark" }, "carried forward from " + r.policyengine_since) : null);
@@ -258,12 +258,12 @@ fieldset { border: 0; padding: 0; margin: 0; }
       box.appendChild(h("div", { class: "usa-table-container--scrollable margin-top-0", tabindex: "0" },
         h("table", { class: "usa-table usa-table--borderless usa-table--compact margin-0" },
           h("caption", { class: "usa-sr-only" }, t.title + ": value by tax year from three sources"),
-          h("thead", null, h("tr", null, h("th", { scope: "col" }, "Tax year"), h("th", { scope: "col" }, "Model's reading of the text"),
-            h("th", { scope: "col" }, "Value this project uses"), h("th", { scope: "col" }, "PolicyEngine"))),
+          h("thead", null, h("tr", null, h("th", { scope: "col" }, "Tax year"), h("th", { scope: "col" }, "From the model's spans"),
+            h("th", { scope: "col" }, "Used by this project"), h("th", { scope: "col" }, "PolicyEngine"))),
           body)));
     });
-    $("values-foot").textContent = "Run " + job.shown + ". Spans that failed the re-parse check are left out. Tax years covered by the two provisions shown to the model as examples use those provisions' stored marks. " +
-      (reached ? "PolicyEngine's values were read just now from its public repository; it records a value from a date until its next entry." : "PolicyEngine's files could not be reached from this server.");
+    $("values-foot").textContent = "Run " + job.shown + ". Unreadable spans are left out. Two provisions are shown to the model as worked examples; for years they cover, their saved spans are used. " +
+      (reached ? "PolicyEngine's values were read from its public repository during this run. It keeps a value until it records a new one, so later years may be carried forward." : "PolicyEngine's values could not be loaded, so that column is empty. The rest of the table is unaffected.");
   }
 
   function card(p) {
@@ -271,18 +271,18 @@ fieldset { border: 0; padding: 0; margin: 0; }
     var el = h("article", { class: "prov" + (result ? "" : " waiting"), id: "card-" + p.id });
     var head = h("div", null, h("span", { class: "cite" }, p.cite));
     if (!result) {
-      head.appendChild(h("span", { class: "usa-tag bg-base" }, "Waiting"));
+      head.appendChild(h("span", { class: "usa-tag bg-base" }, "Waiting for the model"));
       el.appendChild(head);
       el.appendChild(h("div", { class: "rowline" }, h("span", null, "Text"), h("div", null, p.text)));
       return el;
     }
     var failed = result.spans.filter(function (s) { return s.i; }).length;
     head.appendChild(h("span", { class: "usa-tag bg-primary" }, result.spans.length + (result.spans.length === 1 ? " span" : " spans")));
-    if (failed) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, failed + " failed re-parse"));
-    if (result.cached) head.appendChild(h("span", { class: "usa-tag bg-base-lighter text-ink margin-left-05" }, "From cache"));
-    if (result.dropped) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, result.dropped + " not word for word, dropped"));
+    if (failed) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, failed + " unreadable"));
+    if (result.cached) head.appendChild(h("span", { class: "usa-tag bg-base-lighter text-ink margin-left-05" }, "Saved result, reused"));
+    if (result.dropped) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, result.dropped + " dropped: not an exact quote"));
     el.appendChild(head);
-    el.appendChild(h("div", { class: "rowline" }, h("span", null, "Marked"), marked(p.text, result.spans)));
+    el.appendChild(h("div", { class: "rowline" }, h("span", null, "Spans"), marked(p.text, result.spans)));
     return el;
   }
   function drawProvisions() {
@@ -317,7 +317,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     var share = job.total ? Math.round(100 * job.done / job.total) : 0;
     $("bar-fill").style.width = share + "%";
     $("bar").setAttribute("aria-valuenow", String(share));
-    $("status").textContent = text || (job.done + " of " + job.total + " provision results in");
+    $("status").textContent = text || (job.done + " of " + job.total + " provisions marked");
   }
   function finish(text, kind) {
     if (job.source) { job.source.close(); job.source = null; }
@@ -338,7 +338,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     } else if (e.type === "provision") {
       (job.byRun[e.run] = job.byRun[e.run] || {})[e.id] = e;
       job.done += 1;
-      progress("Run " + e.run + " of " + job.runs + ": " + job.done + " of " + job.total + " provision results in");
+      progress((job.runs > 1 ? "Run " + e.run + " of " + job.runs + ". " : "") + job.done + " of " + job.total + " provisions marked");
       if (e.run === job.shown) {
         var old = $("card-" + e.id), p = job.provisions.filter(function (x) { return x.id === e.id; })[0];
         if (old && p) old.parentNode.replaceChild(card(p), old);
@@ -346,18 +346,18 @@ fieldset { border: 0; padding: 0; margin: 0; }
     } else if (e.type === "run_done") {
       job.summaries[e.run] = e.summary; job.values[e.run] = e.values; drawScores(); drawValues();
     } else if (e.type === "done") {
-      progress("Finished: " + job.done + " provision results");
+      progress("Finished. " + job.done + " of " + job.total + " provisions marked.");
       if (e.stability) {
-        $("stability").textContent = "Stability: " + e.stability.in_every_run + " of " + e.stability.distinct +
-          " distinct spans appear in every run (" + pct(e.stability.share) + ").";
+        $("stability").textContent = "Consistency: " + e.stability.in_every_run + " of " + e.stability.distinct +
+          " spans were marked the same way in every run (" + pct(e.stability.share) + ").";
       } else {
-        $("stability").textContent = "Run it more than once to see how stable the marks are.";
+        $("stability").textContent = "To see how consistent the model is, run it two or three times.";
       }
-      finish(job.model === "stand-in" ? "Finished. This was a replay of stored marks that a language model made earlier and no person has reviewed. It shows the pipeline, not a new model run." : "Finished.", "info");
+      finish(job.model === "stand-in" ? "Finished. This played back saved spans; no model was called. The saved spans were made by a language model and have not been reviewed by a person." : "Finished. The values from this run are in the table below.", "info");
     } else if (e.type === "stopped") {
-      progress("Stopped"); finish("Stopped. Results so far are kept in the cache.", "info");
+      progress("Stopped"); finish("Run stopped. Provisions already marked are saved and will be reused if you start again.", "info");
     } else if (e.type === "error") {
-      progress("Stopped on an error"); finish(e.message, "error");
+      progress("The run stopped before finishing"); finish(e.message, "error");
     }
   }
   function follow(id) {
@@ -368,7 +368,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     source.onmessage = function (m) { handle(JSON.parse(m.data)); };
     source.onerror = function () {
       // The browser reconnects by itself and resumes from the last event it saw.
-      if (source.readyState === 2) finish("Lost the connection to the server. Reload the page to see whether the run is still going.", "error");
+      if (source.readyState === 2) finish("The connection to the server was lost. Reload the page: if the run is still going, it will pick up where it is.", "error");
     };
   }
 
@@ -378,14 +378,14 @@ fieldset { border: 0; padding: 0; margin: 0; }
       C = config;
       if (first) {
         C.models.forEach(function (m) {
-          $("model").appendChild(h("option", { value: m.id }, m.label + (m.ready ? "" : " (not available)")));
+          $("model").appendChild(h("option", { value: m.id }, m.label + (m.ready ? "" : " (not set up)")));
         });
         var ready = C.models.filter(function (m) { return m.ready && m.id !== "stand-in"; });
         $("model").value = (ready[0] || C.models[0]).id;
         $("runs").max = C.max_runs;
-        $("runs-hint").textContent = "From 1 to " + C.max_runs + ". More than one shows how stable the marks are.";
-        $("scope-core-label").textContent = "Only the " + C.provisions_core + " that set the rate, the brackets and the credit share";
-        $("scope-all-label").textContent = "All " + C.provisions_all;
+        $("runs-hint").textContent = "1 to " + C.max_runs + ". Two or more shows how consistent the model is.";
+        $("scope-core-label").textContent = "The " + C.provisions_core + " that set the rate, the brackets and the credit share";
+        $("scope-all-label").textContent = "All " + C.provisions_all + " provisions";
         Object.keys(C.classes).forEach(function (c) { $("legend").appendChild(h("span", { class: "sp sp-" + c, title: C.classes[c] }, c)); });
         if (C.running) follow(C.running);
       }
@@ -404,15 +404,15 @@ fieldset { border: 0; padding: 0; margin: 0; }
                              context: $("context").checked, code: $("code").value }) })
       .then(function (r) { return r.json().then(function (body) { return { ok: r.ok, body: body }; }); })
       .then(function (res) {
-        if (!res.ok) { say(res.body.error || "The run could not start."); describe(); return; }
+        if (!res.ok) { say(res.body.error || "The run could not start. Try again."); describe(); return; }
         C.running = res.body.job;
         follow(res.body.job);
       })
-      .catch(function () { say("Could not reach the server."); describe(); });
+      .catch(function () { say("The server did not respond. Check your connection and try again."); describe(); });
   });
-  $("stop").addEventListener("click", function () { fetch("api/stop", { method: "POST", body: "{}" }); $("status").textContent = "Stopping…"; });
+  $("stop").addEventListener("click", function () { fetch("api/stop", { method: "POST", body: "{}" }); $("status").textContent = "Stopping after the provisions in progress…"; });
 
-  refresh().catch(function () { say("Could not load the page's settings from the server."); });
+  refresh().catch(function () { say("This page could not load its settings from the server. Reload to try again."); });
 })();
 </script>
 </body>

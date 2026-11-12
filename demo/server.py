@@ -112,13 +112,13 @@ def available_models():
         import anthropic  # noqa: F401
     except ImportError:
         have_anthropic = False
-    models = [{"id": STAND_IN, "label": "Replay of the stored reference marks (no key, no cost)", "ready": True, "why": ""}]
+    models = [{"id": STAND_IN, "label": "Saved example (free, no model called)", "ready": True, "why": ""}]
     for model_id, label in CLAUDE_MODELS:
         why = ("" if claude_key() and have_anthropic else
-               "the Anthropic SDK is not installed" if claude_key() else "ANTHROPIC_API_KEY is not set")
+               "the Anthropic software is not installed" if claude_key() else "its key, ANTHROPIC_API_KEY, has not been added")
         models.append({"id": model_id, "label": label, "ready": not why, "why": why})
     for model_id, label in GEMINI_MODELS:
-        why = "" if os.environ.get("LANGEXTRACT_API_KEY") else "LANGEXTRACT_API_KEY is not set"
+        why = "" if os.environ.get("LANGEXTRACT_API_KEY") else "its key, LANGEXTRACT_API_KEY, has not been added"
         models.append({"id": model_id, "label": label, "ready": not why, "why": why})
     return models
 
@@ -300,10 +300,13 @@ def run_job(job):
                         lx, engine["version"], env, pid, model_name, options, with_context=job.with_context,
                         run=run, replay=over_budget, use_cache=not dry)
                 except extract.CacheMiss:
-                    failure.append("This server has reached its limit of %d model calls. Restart it to reset." % MAX_CALLS)
+                    failure.append("This demo has used all %d of its paid model calls. The person hosting it can reset "
+                                   "the count by restarting the server. Provisions already marked are saved." % MAX_CALLS)
                     return
                 except Exception as exc:  # a provider error: quota, network, bad key
-                    failure.append("%s: %s" % (CORPUS["cite"][pid], " ".join(str(exc).split())[:400]))
+                    failure.append("The model service returned an error at %s, so the run stopped. Provisions already "
+                                   "marked are saved; start the run again to continue. The service said: %s"
+                                   % (CORPUS["cite"][pid], " ".join(str(exc).split())[:400]))
                     return
                 if not cached and not dry:
                     with state_lock:
@@ -350,7 +353,8 @@ def run_job(job):
                          "unstable": sorted({"%s|%d|%d" % (k[0], k[2], k[3]) for k in union - everywhere})}
         job.emit("done", stability=stability)
     except Exception as exc:  # never leave the page waiting
-        job.emit("error", message="The run failed: %s" % " ".join(str(exc).split())[:400])
+        job.emit("error", message="Something went wrong on the server and the run stopped. Start it again; "
+                                  "provisions already marked are saved. Details: %s" % " ".join(str(exc).split())[:400])
 
 
 def start_job(body):
@@ -360,24 +364,24 @@ def start_job(body):
     if model not in models:
         return 400, {"error": "Choose a model from the list."}
     if not models[model]["ready"]:
-        return 400, {"error": "That model cannot run here: %s." % models[model]["why"]}
+        return 400, {"error": "%s is not set up on this server: %s." % (models[model]["label"], models[model]["why"])}
     try:
         runs = int(body.get("runs", 1))
     except (TypeError, ValueError):
-        return 400, {"error": "Runs must be a whole number."}
+        return 400, {"error": "Enter how many times to run it as a whole number."}
     if not 1 <= runs <= MAX_RUNS:
-        return 400, {"error": "Runs must be between 1 and %d." % MAX_RUNS}
+        return 400, {"error": "Enter a number of runs from 1 to %d." % MAX_RUNS}
     scope = body.get("scope", "core")
     if scope not in ("core", "all"):
         return 400, {"error": "Choose which provisions to mark."}
     if ACCESS_CODE and model != STAND_IN:
         supplied = str(body.get("code", ""))
         if not hmac.compare_digest(supplied.encode("utf-8"), ACCESS_CODE.encode("utf-8")):
-            return 403, {"error": "That access code is not right."}
+            return 403, {"error": "That access code is not right. Check it with the person hosting this demo and try again."}
     with state_lock:
         current = state["job"]
         if current is not None and not current.finished:
-            return 409, {"error": "A run is already in progress. Wait for it to finish, or stop it."}
+            return 409, {"error": "Someone has a run in progress, and this demo does one at a time. Try again in a few minutes."}
         job = Job(state["next_id"], model, runs, bool(body.get("context", True)), scope)
         state["next_id"] += 1
         state["job"] = job
