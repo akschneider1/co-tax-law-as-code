@@ -248,6 +248,7 @@ def main():
 
     from collections import Counter
     groups, dropped, sent, cached = [], Counter(), 0, 0
+    stopped = None
     for provision_id, text in sorted(provisions.items()):
         if provision_id in example_ids:
             continue
@@ -261,19 +262,25 @@ def main():
             print("cache miss for %s; run without --replay to call the model" % provision_id)
             return 1
         else:
-            result = lx.extract(
-                text_or_documents=text,
-                prompt_description=PROMPT,
-                examples=examples,
-                additional_context=context,
-                extraction_passes=args.passes,
-                # One provision is one unit: never split it, or a span across the split is lost.
-                max_char_buffer=len(text) + 1000,
-                # Verbatim only: no fuzzy matching, no partial matches.
-                resolver_params={"enable_fuzzy_alignment": False, "accept_match_lesser": False},
-                show_progress=False,
-                **options
-            )
+            try:
+                result = lx.extract(
+                  text_or_documents=text,
+                  prompt_description=PROMPT,
+                  examples=examples,
+                  additional_context=context,
+                  extraction_passes=args.passes,
+                  # One provision is one unit: never split it, or a span across the split is lost.
+                  max_char_buffer=len(text) + 1000,
+                  # Verbatim only: no fuzzy matching, no partial matches.
+                  resolver_params={"enable_fuzzy_alignment": False, "accept_match_lesser": False},
+                  show_progress=False,
+                  **options
+              )
+            except Exception as exc:  # a provider error: quota, network, bad key
+                # Results so far are in the cache, so the next run resumes here.
+                message = " ".join(str(exc).split())
+                stopped = "%s: %s" % (provision_id, message[:300])
+                break
             raw = [{
                 "extraction_class": e.extraction_class,
                 "extraction_text": e.extraction_text,
@@ -311,7 +318,10 @@ def main():
     output = pathlib.Path(args.output)
     output.write_text(json.dumps({
         "about": ("DRY RUN: produced by a stand-in that answers from the hand marks. Not a model result."
-                  if args.dry_run else "Candidate spans marked by a model through LangExtract. Unreviewed."),
+                  if args.dry_run else
+                  "INCOMPLETE: the run stopped before every provision was sent. Unreviewed."
+                  if stopped else "Candidate spans marked by a model through LangExtract. Unreviewed."),
+        "complete": stopped is None,
         "extracted_by": "LangExtract %s with %s%s; %d provisions hand-marked as examples. Not reviewed by a lawyer."
                         % (lx_version, model_name, "" if context is not None else ", no context", len(example_ids)),
         "classes": hand["classes"],
@@ -324,6 +334,10 @@ def main():
             print("  %d  %s" % (count, reason))
     else:
         print("no spans dropped")
+    if stopped:
+        print("\nSTOPPED before finishing, at %s" % stopped)
+        print("The output is incomplete. Results so far are cached; run the same command again to resume.")
+        return 1
     print("next: python3 tools/evaluate.py %s" % output)
     return 0
 
