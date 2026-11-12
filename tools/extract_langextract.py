@@ -10,6 +10,7 @@ Needs Python 3.10+, `pip install -r requirements-langextract.txt`, and a key:
 or  export LANGEXTRACT_API_KEY=...      (Gemini, the default)
 or  export OPENAI_API_KEY=...           with --model gpt-4o and langextract[openai]
 or  export ANTHROPIC_API_KEY=...        with --model claude-opus-5-5 and `pip install anthropic`
+                                        (COTAX_CLAUDE_API_KEY is read first, if set)
 or a local Ollama model                 with --model gemma2:2b --model-url http://localhost:11434
 
 What it does
@@ -210,7 +211,10 @@ def claude_model(model_id):
 
     # Name the API host outright. Some environments set ANTHROPIC_BASE_URL for
     # their own tooling, and the key for this run belongs to api.anthropic.com.
-    client = anthropic.Anthropic(base_url="https://api.anthropic.com")
+    # COTAX_CLAUDE_API_KEY, if set, is used in preference to ANTHROPIC_API_KEY. It exists for
+    # environments where ANTHROPIC_API_KEY is reserved for the tooling that hosts the session.
+    client = anthropic.Anthropic(base_url="https://api.anthropic.com",
+                                 api_key=os.environ.get("COTAX_CLAUDE_API_KEY") or None)
 
     class Claude(base_model.BaseLanguageModel):
         def infer(self, batch_prompts, **kwargs):
