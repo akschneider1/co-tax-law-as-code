@@ -24,6 +24,37 @@ python3 calc.py --year 2025 --taxable-income 20000 --federal-eitc 4000
 
 The calculator prints two tax figures: the amount the statutory rate gives, and the amount the Department of Revenue's printed tax table gives. They differ by a few dollars at or below $50,000. Add `--method form` to build the net figure on the table amount. Add `--eitc-basis under_25` or `--eitc-basis no_work_ssn` when the federal credit amount is the one the filer would have been allowed, not one they claimed.
 
+## Live demo
+
+A one-page web app that runs the model marking in front of you. Choose a model and a number of runs, press Run, and each provision appears as the model returns it, with its spans highlighted in the statute's words and checked on the spot. Repeat runs show how stable the marks are.
+
+```bash
+pip install -r requirements.txt
+```
+
+```bash
+python3 demo/server.py
+```
+
+Then open http://localhost:5000. It needs Python 3.10 or later. The existing viewer is linked from the page.
+
+**Keys** are read from the environment and never sent to the page: `ANTHROPIC_API_KEY` for Claude models, `LANGEXTRACT_API_KEY` for Gemini. With neither, a stand-in model still works. It answers from the hand marks, so it shows the pipeline and nothing about a model.
+
+**On Replit:** import the repository (`https://replit.com/github.com/akschneider1/co-tax-law-as-code` imports the default branch), add the keys in the Secrets tool, and press Run. `.replit` and `requirements.txt` are set up for this. The Replit configuration has not been tried on Replit; it was written from Replit's documentation as summarised by a search engine.
+
+**Limits.** Anyone who can open the page can spend the key's money, so the server enforces limits, each settable as an environment variable:
+
+| Variable | Default | What it limits |
+|---|---|---|
+| `DEMO_ACCESS_CODE` | not set | If set, a run with a paid model must supply it. Set this before making the app public. |
+| `DEMO_MAX_RUNS` | 3 | Runs per job |
+| `DEMO_MAX_CALLS` | 300 | Model calls the server makes before it must be restarted. Cached results do not count. |
+| `DEMO_WORKERS` | 4 | Provisions marked at once |
+
+One job runs at a time. Results are cached in `extractions/cache/`, so a repeat of the same run costs nothing.
+
+What has been tried: the stand-in and Gemini, in a browser, including the cache, the access code and the call limit. The Claude models reach the API but no Claude request has completed, because no Claude key was available.
+
 ## See how a parameter is built from the text
 
 ```bash
@@ -49,7 +80,7 @@ How the grounding works:
 
 `tools/extract_langextract.py` replaces the hand marking with a model call per provision through Google's LangExtract library. Two hand-marked provisions serve as the examples; the model marks the rest. Each provision is sent with the context a reader needs: its heading, the lead-in text above it, later provisions that modify it, and the text it cross-refers to.
 
-**Not yet run against a real model.** It needs Python 3.10 or later and a model API key, and no key was available. It has been run end to end against LangExtract 1.7.2 with a stand-in model that answers from the hand marks (`--dry-run`). That tests the plumbing: prompting, parsing, alignment, caching and scoring. It says nothing about how well a model marks spans.
+**Run once against a real model, in part.** Gemini 3.5 Flash, with context, has marked 22 of the 31 provisions; a free-tier daily quota stopped it there. On the 9 provisions that have hand marks it scored 72% precision and 76% recall on exact matches, and every span it returned was word for word in the text. No run without context, no repeat run and no Claude run has been made, and no person has decided the disagreements. The script has also been run end to end with a stand-in model that answers from the hand marks (`--dry-run`), which tests the plumbing only.
 
 ```bash
 pip install -r requirements-langextract.txt

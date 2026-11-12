@@ -159,9 +159,12 @@ def without_overlaps(spans, dropped):
     return kept
 
 
-def cache_key(text, context, examples_text, model, passes):
+def cache_key(text, context, examples_text, model, passes, run=1):
     digest = hashlib.sha256()
-    for part in (text, PROMPT, context or "", examples_text, model, str(passes)):
+    parts = [text, PROMPT, context or "", examples_text, model, str(passes)]
+    if run != 1:
+        parts.append("run:%d" % run)  # run 1 keeps the key it had before repeat runs existed
+    for part in parts:
         digest.update(part.encode("utf-8"))
         digest.update(b"\x00")
     return digest.hexdigest()
@@ -216,18 +219,25 @@ def claude_model(model_id):
     client = anthropic.Anthropic(base_url="https://api.anthropic.com",
                                  api_key=os.environ.get("COTAX_CLAUDE_API_KEY") or None)
 
+    # Claude Haiku 5.5 has no server-side refusal fallback, so it is not asked for one.
+    state = {"fallbacks": "haiku" not in model_id}
+
     class Claude(base_model.BaseLanguageModel):
         def infer(self, batch_prompts, **kwargs):
             for prompt in batch_prompts:
-                response = client.beta.messages.create(
-                    model=model_id,
-                    max_tokens=16000,
-                    output_config={"effort": "medium"},
-                    # If a safety classifier declines, let the API retry on its default fallback model.
-                    betas=["server-side-fallback-2026-07-01"],
-                    fallbacks="default",
-                    messages=[{"role": "user", "content": prompt}],
-                )
+                request = dict(model=model_id, max_tokens=16000, output_config={"effort": "medium"},
+                               messages=[{"role": "user", "content": prompt}])
+                response = None
+                if state["fallbacks"]:
+                    try:
+                        # If a safety classifier declines, let the API retry on its default fallback model.
+                        response = client.beta.messages.create(
+                            betas=["server-side-fallback-2026-07-01"], fallbacks="default", **request)
+                    except anthropic.BadRequestError:
+                        # This model or account does not take the fallback setting; go on without it.
+                        state["fallbacks"] = False
+                if response is None:
+                    response = client.messages.create(**request)
                 if response.stop_reason == "refusal":
                     raise RuntimeError("Claude declined the request (stop_reason refusal)")
                 if response.stop_reason == "max_tokens":
@@ -242,6 +252,115 @@ def claude_model(model_id):
     return Claude()
 
 
+class CacheMiss(Exception):
+    """Raised in replay mode when a provision's result is not in the cache."""
+
+
+def load_langextract():
+    """Import LangExtract and report its version, or raise ImportError."""
+    import langextract as lx
+    try:
+        from importlib.metadata import version
+        lx_version = version("langextract")
+    except Exception:
+        lx_version = "version unknown"
+    return lx, lx_version
+
+
+def setup(lx):
+    """Everything a run needs that does not depend on the model."""
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    example_ids = tuple(config["example_provisions"])
+    hand = json.loads(HAND_MARKED.read_text(encoding="utf-8"))
+    sections = attach_cross_refs(load_sections())
+    provisions = {pid: p["text"] for pid, p in index(sections).items() if p["text"]}
+    examples = build_examples(lx, provisions, hand, example_ids)
+    examples_text = json.dumps([[e.text, [(x.extraction_class, x.extraction_text) for x in e.extractions]]
+                                for e in examples], ensure_ascii=False)
+    return {
+        "config": config, "example_ids": example_ids, "hand": hand, "sections": sections,
+        "provisions": provisions, "examples": examples, "examples_text": examples_text,
+        "targets": [pid for pid in sorted(provisions) if pid not in example_ids],
+    }
+
+
+def model_options(lx, env, model, model_url=None, dry_run=False):
+    """Return (name recorded for the model, keyword arguments for lx.extract)."""
+    options = {"model_url": model_url} if model_url else {}
+    if dry_run:
+        options["model"] = stand_in_model(lx, env["provisions"], env["hand"])
+        return "stand-in (hand marks)", options
+    if model.startswith("claude-"):
+        options["model"] = claude_model(model)
+    else:
+        options["model_id"] = model
+    return model, options
+
+
+def mark_provision(lx, lx_version, env, provision_id, model_name, options,
+                   passes=1, with_context=True, run=1, replay=False, use_cache=True):
+    """Mark one provision. Returns (raw extractions, True if they came from the cache).
+
+    run numbers repeat runs: run 1 and run 2 of the same provision are cached
+    separately, so a repeat run is a fresh call and can be compared with the first.
+    """
+    text = env["provisions"][provision_id]
+    context = context_for(provision_id, env["sections"]) if with_context else None
+    key = cache_key(text, context, env["examples_text"], model_name, passes, run)
+    cache_file = CACHE / (key + ".json")
+    if use_cache and cache_file.exists():
+        return json.loads(cache_file.read_text(encoding="utf-8"))["extractions"], True
+    if replay:
+        raise CacheMiss(provision_id)
+    result = lx.extract(
+        text_or_documents=text,
+        prompt_description=PROMPT,
+        examples=env["examples"],
+        additional_context=context,
+        extraction_passes=passes,
+        # One provision is one unit: never split it, or a span across the split is lost.
+        max_char_buffer=len(text) + 1000,
+        # Verbatim only: no fuzzy matching, no partial matches.
+        resolver_params={"enable_fuzzy_alignment": False, "accept_match_lesser": False},
+        show_progress=False,
+        **options
+    )
+    raw = [{
+        "extraction_class": e.extraction_class,
+        "extraction_text": e.extraction_text,
+        "attributes": e.attributes,
+        "start": e.char_interval.start_pos if e.char_interval else None,
+        "end": e.char_interval.end_pos if e.char_interval else None,
+        "alignment_status": getattr(e.alignment_status, "value", e.alignment_status),
+    } for e in result.extractions]
+    if use_cache:
+        CACHE.mkdir(exist_ok=True)
+        cache_file.write_text(json.dumps({
+            "provision": provision_id, "model": model_name, "langextract": lx_version,
+            "passes": passes, "with_context": context is not None, "run": run, "extractions": raw,
+        }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return raw, False
+
+
+def group_for(env, provision_id, raw, dropped):
+    """Turn raw extractions into this project's group of checked spans, or None if none survive."""
+    text = env["provisions"][provision_id]
+    spans = [to_span(_Raw(r), env["hand"]["classes"], text, dropped) for r in raw]
+    spans = without_overlaps([s for s in spans if s], dropped)
+    if not spans:
+        return None
+    sets_value = any(s["class"] == "value" for s in spans)
+    section = next(s["id"] for s in env["sections"] if provision_id.startswith(s["id"] + "/"))
+    group = {
+        "provision": provision_id,
+        "parameter": env["config"]["parameter_by_section"].get(section) if sets_value else None,
+        "spans": spans,
+    }
+    if any(s["class"] == "threshold" for s in spans) and sum(s["class"] == "value" for s in spans) > 1:
+        group["derive"] = "schedule"  # several rates with thresholds: a bracket schedule
+    return group
+
+
 def main():
     parser = argparse.ArgumentParser(description="Mark statute spans with LangExtract.")
     parser.add_argument("--model", default="gemini-3.5-flash",
@@ -250,6 +369,9 @@ def main():
     parser.add_argument("--model-url", default=None, help="for a local Ollama model")
     parser.add_argument("--passes", type=int, default=1,
                         help="extraction passes per provision; later passes add spans, they are not a vote")
+    parser.add_argument("--run", type=int, default=1,
+                        help="which repeat run this is; each run number is cached separately, so run 2 "
+                             "calls the model again and can be compared with run 1")
     parser.add_argument("--no-context", action="store_true", help="send each provision without its context")
     parser.add_argument("--replay", action="store_true", help="use cached results only; fail on a miss")
     parser.add_argument("--dry-run", action="store_true",
@@ -264,15 +386,10 @@ def main():
         print("LangExtract needs Python 3.10 or later; this is %s." % sys.version.split()[0])
         return 2
     try:
-        import langextract as lx
+        lx, lx_version = load_langextract()
     except ImportError:
         print("LangExtract is not installed: pip install -r requirements-langextract.txt")
         return 2
-    try:
-        from importlib.metadata import version
-        lx_version = version("langextract")
-    except Exception:
-        lx_version = "version unknown"
 
     if args.ask_key:
         if not sys.stdin.isatty():
@@ -282,95 +399,38 @@ def main():
                     "OPENAI_API_KEY" if args.model.startswith(("gpt-", "o1", "o3", "o4")) else "LANGEXTRACT_API_KEY")
         os.environ[variable] = getpass.getpass("Model key for %s (input is hidden): " % args.model).strip()
 
-    config = json.loads(CONFIG.read_text(encoding="utf-8"))
-    example_ids = tuple(config["example_provisions"])
-    hand = json.loads(HAND_MARKED.read_text(encoding="utf-8"))
-    sections = attach_cross_refs(load_sections())
-    provisions = {pid: p["text"] for pid, p in index(sections).items() if p["text"]}
-    examples = build_examples(lx, provisions, hand, example_ids)
-    examples_text = json.dumps([[e.text, [(x.extraction_class, x.extraction_text) for x in e.extractions]]
-                                for e in examples], ensure_ascii=False)
-    model_name = "stand-in (hand marks)" if args.dry_run else args.model
-    options = {"model_url": args.model_url} if args.model_url else {}
-    if args.dry_run:
-        options["model"] = stand_in_model(lx, provisions, hand)
-    elif args.model.startswith("claude-"):
-        try:
-            options["model"] = claude_model(args.model)
-        except ImportError:
-            print("The Anthropic SDK is not installed: pip install anthropic")
-            return 2
-    else:
-        options["model_id"] = args.model
+    env = setup(lx)
+    try:
+        model_name, options = model_options(lx, env, args.model, args.model_url, args.dry_run)
+    except ImportError:
+        print("The Anthropic SDK is not installed: pip install anthropic")
+        return 2
 
     from collections import Counter
     groups, dropped, sent, cached = [], Counter(), 0, 0
     stopped = None
-    for provision_id, text in sorted(provisions.items()):
-        if provision_id in example_ids:
-            continue
-        context = None if args.no_context else context_for(provision_id, sections)
-        key = cache_key(text, context, examples_text, model_name, args.passes)
-        cache_file = CACHE / (key + ".json")
-        if cache_file.exists() and not args.dry_run:
-            raw = json.loads(cache_file.read_text(encoding="utf-8"))["extractions"]
-            cached += 1
-        elif args.replay:
+    for provision_id in env["targets"]:
+        try:
+            raw, was_cached = mark_provision(
+                lx, lx_version, env, provision_id, model_name, options, passes=args.passes,
+                with_context=not args.no_context, run=args.run, replay=args.replay, use_cache=not args.dry_run)
+        except CacheMiss:
             print("cache miss for %s; run without --replay to call the model" % provision_id)
             return 1
-        else:
-            try:
-                result = lx.extract(
-                  text_or_documents=text,
-                  prompt_description=PROMPT,
-                  examples=examples,
-                  additional_context=context,
-                  extraction_passes=args.passes,
-                  # One provision is one unit: never split it, or a span across the split is lost.
-                  max_char_buffer=len(text) + 1000,
-                  # Verbatim only: no fuzzy matching, no partial matches.
-                  resolver_params={"enable_fuzzy_alignment": False, "accept_match_lesser": False},
-                  show_progress=False,
-                  **options
-              )
-            except Exception as exc:  # a provider error: quota, network, bad key
-                # Results so far are in the cache, so the next run resumes here.
-                message = " ".join(str(exc).split())
-                stopped = "%s: %s" % (provision_id, message[:300])
-                break
-            raw = [{
-                "extraction_class": e.extraction_class,
-                "extraction_text": e.extraction_text,
-                "attributes": e.attributes,
-                "start": e.char_interval.start_pos if e.char_interval else None,
-                "end": e.char_interval.end_pos if e.char_interval else None,
-                "alignment_status": getattr(e.alignment_status, "value", e.alignment_status),
-            } for e in result.extractions]
-            sent += 1
-            if not args.dry_run:
-                CACHE.mkdir(exist_ok=True)
-                cache_file.write_text(json.dumps({
-                    "provision": provision_id, "model": model_name, "langextract": lx_version,
-                    "passes": args.passes, "with_context": context is not None, "extractions": raw,
-                }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-        spans = [to_span(_Raw(r), hand["classes"], text, dropped) for r in raw]
-        spans = without_overlaps([s for s in spans if s], dropped)
-        if not spans:
+        except Exception as exc:  # a provider error: quota, network, bad key
+            # Results so far are in the cache, so the next run resumes here.
+            stopped = "%s: %s" % (provision_id, " ".join(str(exc).split())[:300])
+            break
+        cached += was_cached
+        sent += not was_cached
+        group = group_for(env, provision_id, raw, dropped)
+        if group is None:
             continue
-        sets_value = any(s["class"] == "value" for s in spans)
-        section = next(s["id"] for s in sections if provision_id.startswith(s["id"] + "/"))
-        group = {
-            "provision": provision_id,
-            "parameter": config["parameter_by_section"].get(section) if sets_value else None,
-            "spans": spans,
-        }
-        if any(s["class"] == "threshold" for s in spans) and sum(s["class"] == "value" for s in spans) > 1:
-            group["derive"] = "schedule"  # several rates with thresholds: a bracket schedule
         groups.append(group)
-        print("%-58s %d spans kept" % (provision_id, len(spans)))
+        print("%-58s %d spans kept" % (provision_id, len(group["spans"])))
 
     # The examples are hand-marked; carry them over so the file is complete.
+    hand, example_ids = env["hand"], env["example_ids"]
     groups.extend(g for g in hand["groups"] if g["provision"] in example_ids)
     output = pathlib.Path(args.output)
     output.write_text(json.dumps({
@@ -380,7 +440,7 @@ def main():
                   if stopped else "Candidate spans marked by a model through LangExtract. Unreviewed."),
         "complete": stopped is None,
         "extracted_by": "LangExtract %s with %s%s; %d provisions hand-marked as examples. Not reviewed by a lawyer."
-                        % (lx_version, model_name, "" if context is not None else ", no context", len(example_ids)),
+                        % (lx_version, model_name, ", no context" if args.no_context else "", len(example_ids)),
         "classes": hand["classes"],
         "groups": sorted(groups, key=lambda g: g["provision"]),
     }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")

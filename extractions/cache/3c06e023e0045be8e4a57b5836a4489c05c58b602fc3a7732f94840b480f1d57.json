@@ -1,0 +1,57 @@
+{
+  "provision": "/us/co/crs/39-22-123.5/2.5/b",
+  "model": "gemini-3.5-flash",
+  "langextract": "1.7.2",
+  "passes": 1,
+  "with_context": true,
+  "extractions": [
+    {
+      "extraction_class": "period",
+      "extraction_text": "on or after January 1, 2022, but before January 1, 2023",
+      "attributes": {
+        "from": "2022-01-01",
+        "to": "2022-12-31"
+      },
+      "start": 32,
+      "end": 87,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "period",
+      "extraction_text": "on or after January 1, 2026",
+      "attributes": {
+        "from": "2026-01-01",
+        "to": ""
+      },
+      "start": 121,
+      "end": 148,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "who",
+      "extraction_text": "a resident individual",
+      "attributes": {},
+      "start": 150,
+      "end": 171,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "twenty percent",
+      "attributes": {
+        "decimal": "0.20"
+      },
+      "start": 272,
+      "end": 286,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "base",
+      "extraction_text": "the federal credit that the resident individual would have been allowed, but for the fact that the resident individual, the resident individual’s spouse, or one or more of the resident individual’s dependents do not have a social security number that is valid for employment",
+      "attributes": {},
+      "start": 290,
+      "end": 564,
+      "alignment_status": "match_exact"
+    }
+  ]
+}

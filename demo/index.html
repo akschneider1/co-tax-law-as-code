@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Colorado tax law as code: live demo</title>
+<script src="assets/uswds/js/uswds-init.min.js"></script>
+<link rel="stylesheet" href="assets/uswds/css/uswds.min.css">
+<style>
+/* Built with the U.S. Web Design System (USWDS 3). Only what USWDS has no
+   component for is styled here: highlighted spans, provision cards, the progress bar. */
+.sp { border-radius: 2px; padding: 1px 3px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+.sp-period { background: #d9e8f6; color: #1a4480; }
+.sp-value { background: #fee685; color: #5c410a; }
+.sp-base { background: #dbebde; color: #19311e; }
+.sp-who { background: #ede3ff; color: #54278f; }
+.sp-exception { background: #f8dfe2; color: #8b0a03; }
+.sp-effect { background: #ccecf2; color: #0e4f5c; }
+.sp-threshold { background: #ffe6cf; color: #5f3a12; }
+.sp.diff { outline: 2px solid #b50909; outline-offset: 1px; }
+.sp.issue { outline: 2px dashed #936f38; outline-offset: 1px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
+.legend .sp { font-size: .82rem; }
+[hidden] { display: none !important; }
+.bar { height: 12px; background: #dfe1e2; border-radius: 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: #005ea2; transition: width .2s; }
+.prov { border: 1px solid #dfe1e2; border-radius: 4px; padding: 12px 14px; margin-bottom: 12px; background: #fff; }
+.prov.waiting { color: #71767a; background: #f9f9f9; }
+.prov .cite { font-family: "Roboto Mono Web", monospace; font-size: .88rem; margin-right: 8px; overflow-wrap: anywhere; }
+.rowline { display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: 10px; margin-top: 8px; line-height: 1.75; }
+.rowline > span { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: #565c65; font-weight: 700; padding-top: 4px; }
+.rowline > div { overflow-wrap: anywhere; }
+@media (max-width: 30em) { .rowline { grid-template-columns: 1fr; gap: 2px; } }
+.usa-tag { white-space: nowrap; }
+.usa-alert__text, .usa-process-list__item p { max-width: none; }
+fieldset { border: 0; padding: 0; margin: 0; }
+</style>
+</head>
+<body>
+<a class="usa-skipnav" href="#main-content">Skip to main content</a>
+<header class="usa-header usa-header--basic">
+  <div class="usa-nav-container maxw-widescreen">
+    <div class="usa-navbar">
+      <div class="usa-logo"><em class="usa-logo__text">Colorado tax law as code</em></div>
+    </div>
+  </div>
+</header>
+
+<main id="main-content">
+  <div class="grid-container-widescreen padding-y-3">
+    <div class="usa-alert usa-alert--warning usa-alert--slim">
+      <div class="usa-alert__body">
+        <p class="usa-alert__text"><strong>Unofficial prototype.</strong> This is not a government website, not tax advice and not a statement of Colorado law. No lawyer has reviewed any span shown here.</p>
+      </div>
+    </div>
+    <h1 class="font-heading-xl margin-top-3 margin-bottom-1">Watch a model mark the statute</h1>
+    <p class="usa-intro margin-top-0 maxw-tablet-lg">A model reads each provision and marks the words that carry a tax rule: the years, the number, who it applies to. Every mark is then checked against the statute's own words. Press Run to see it happen.</p>
+    <p><a class="usa-link" href="viewer/">See how each year's value is built from the statute text</a></p>
+
+    <div class="grid-row grid-gap margin-top-2">
+      <section class="desktop:grid-col-4 margin-bottom-3" aria-labelledby="run-h">
+        <div class="border border-base-lighter radius-md padding-2 bg-white">
+          <h2 class="font-heading-lg margin-top-0" id="run-h">Run</h2>
+          <form id="form" class="usa-form maxw-none">
+            <label class="usa-label margin-top-0" for="model">Model</label>
+            <select class="usa-select" id="model" name="model"></select>
+            <p class="usa-hint font-body-3xs margin-top-05" id="model-hint"></p>
+
+            <label class="usa-label" for="runs">Number of runs</label>
+            <span class="usa-hint font-body-3xs" id="runs-hint"></span>
+            <input class="usa-input usa-input--small" id="runs" name="runs" type="number" min="1" value="1" aria-describedby="runs-hint">
+
+            <fieldset class="usa-fieldset margin-top-3">
+              <legend class="usa-legend margin-top-0">Provisions to mark</legend>
+              <div class="usa-radio">
+                <input class="usa-radio__input" id="scope-hand" type="radio" name="scope" value="hand" checked>
+                <label class="usa-radio__label" for="scope-hand" id="scope-hand-label">Only those with hand marks to score against</label>
+              </div>
+              <div class="usa-radio">
+                <input class="usa-radio__input" id="scope-all" type="radio" name="scope" value="all">
+                <label class="usa-radio__label" for="scope-all" id="scope-all-label">All</label>
+              </div>
+            </fieldset>
+
+            <div class="usa-checkbox margin-top-2">
+              <input class="usa-checkbox__input" id="context" type="checkbox" name="context" checked>
+              <label class="usa-checkbox__label" for="context">Send context with each provision</label>
+            </div>
+            <p class="usa-hint font-body-3xs margin-top-05">Context is the heading, the lead-in text above the provision, later provisions that modify it, and the text it refers to.</p>
+
+            <div id="code-wrap" hidden>
+              <label class="usa-label" for="code">Access code</label>
+              <span class="usa-hint font-body-3xs">Needed to run a model that costs money.</span>
+              <input class="usa-input" id="code" name="code" type="password" autocomplete="off">
+            </div>
+
+            <p class="font-body-2xs margin-top-3 margin-bottom-0" id="cost"></p>
+            <div class="margin-top-2">
+              <button class="usa-button" type="submit" id="go">Run</button>
+              <button class="usa-button usa-button--outline" type="button" id="stop" hidden>Stop</button>
+            </div>
+          </form>
+          <div id="message" role="alert" aria-live="assertive"></div>
+        </div>
+
+        <div class="border border-base-lighter radius-md padding-2 bg-white margin-top-2" id="results" hidden>
+          <h2 class="font-heading-lg margin-top-0">Results</h2>
+          <p class="margin-top-0 margin-bottom-1 font-body-2xs" id="status" aria-live="polite"></p>
+          <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="bar" aria-label="Progress"><i id="bar-fill"></i></div>
+          <div class="usa-table-container--scrollable margin-top-2" tabindex="0">
+            <table class="usa-table usa-table--borderless usa-table--compact margin-0 font-body-2xs">
+              <caption class="usa-sr-only">Scores for each run against the hand marks</caption>
+              <thead><tr><th scope="col">Run</th><th scope="col">Spans</th><th scope="col">Precision</th><th scope="col">Recall</th><th scope="col">Failed checks</th></tr></thead>
+              <tbody id="scores"></tbody>
+            </table>
+          </div>
+          <p class="font-body-3xs text-base-dark margin-top-1">Precision: the share of the model's spans that are also hand marks. Recall: the share of hand marks the model found. Both count exact matches only. The hand marks are a reference made by a language model, not the truth.</p>
+          <p class="font-body-2xs margin-bottom-0" id="stability"></p>
+        </div>
+      </section>
+
+      <section class="desktop:grid-col-8" aria-labelledby="prov-h">
+        <div class="border border-base-lighter radius-md padding-2 bg-white">
+          <h2 class="font-heading-lg margin-top-0" id="prov-h">Provisions</h2>
+          <p class="legend margin-y-1" id="legend"><span class="font-body-xs text-base-dark margin-right-1">Marked spans:</span></p>
+          <p class="font-body-3xs text-base-dark margin-top-0">A solid red outline is a span the model and the hand marks disagree on. A dashed outline is a span whose dates or number did not re-parse from its words.</p>
+          <div id="run-tabs"></div>
+          <div id="provs"><p class="text-base-dark">Nothing has run yet. Choose a model and press Run.</p></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</main>
+
+<footer class="grid-container-widescreen padding-y-3 border-top border-base-lighter">
+  <p class="font-body-3xs text-base-dark margin-0">Statute text is an unofficial copy and is known to be out of date in five places. Model keys stay on the server and are never sent to this page.</p>
+</footer>
+
+<script src="assets/uswds/js/uswds.min.js"></script>
+<script>
+(function () {
+  var C = null;                                  // server configuration
+  var job = { id: null, runs: 0, provisions: [], byRun: {}, summaries: {}, done: 0, total: 0, shown: 1, source: null, model: "" };
+
+  function h(tag, attrs) {
+    var el = document.createElement(tag);
+    for (var k in (attrs || {})) {
+      if (k === "class") el.className = attrs[k];
+      else if (k.slice(0, 2) === "on") el.addEventListener(k.slice(2), attrs[k]);
+      else if (attrs[k] != null) el.setAttribute(k, attrs[k]);
+    }
+    for (var i = 2; i < arguments.length; i++) {
+      var c = arguments[i];
+      if (c == null) continue;
+      el.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+    }
+    return el;
+  }
+  function $(id) { return document.getElementById(id); }
+  function pct(v) { return v == null ? "n/a" : Math.round(v * 100) + "%"; }
+  function period(n) {
+    var a = n && n.from ? n.from.slice(0, 4) : null, b = n && n.to ? n.to.slice(0, 4) : null;
+    if (a && b) return a === b ? "tax year " + a : "tax years " + a + " to " + b;
+    if (a) return "tax years " + a + " onward";
+    return b ? "tax years through " + b : null;
+  }
+  function meaning(s) {
+    if (s.c === "period") return period(s.n);
+    if (s.c === "value" && s.n) return (+(parseFloat(s.n) * 100).toFixed(2)) + "%";
+    if (s.c === "threshold" && s.n) return "$" + Number(s.n).toLocaleString("en-US");
+    return null;
+  }
+  function say(text, kind) {
+    var box = $("message");
+    box.textContent = "";
+    if (!text) return;
+    box.appendChild(h("div", { class: "usa-alert usa-alert--" + (kind || "error") + " usa-alert--slim margin-top-2" },
+      h("div", { class: "usa-alert__body" }, h("p", { class: "usa-alert__text" }, text))));
+  }
+
+  function selected() { return C.models.filter(function (m) { return m.id === $("model").value; })[0]; }
+  function scope() { return $("scope-all").checked ? "all" : "hand"; }
+  function describe() {
+    var m = selected(), n = (scope() === "all" ? C.provisions_all : C.provisions_hand), runs = parseInt($("runs").value, 10) || 1;
+    $("model-hint").textContent = m.ready ? "" : "Not available on this server: " + m.why + ".";
+    $("go").disabled = !m.ready || !!C.running;
+    $("code-wrap").hidden = !(C.needs_code && m.id !== "stand-in");
+    $("cost").textContent = m.id === "stand-in"
+      ? "The stand-in makes no model calls and costs nothing. It shows the pipeline, not a model."
+      : "Up to " + (n * runs) + " model calls (" + n + " provisions × " + runs + (runs === 1 ? " run" : " runs") +
+        "). Results already cached are not called again. This server will make " + C.calls_left + " more calls before it must be restarted.";
+  }
+
+  function marked(text, spans, otherKeys) {
+    var box = h("div"), pos = 0;
+    spans.forEach(function (s) {
+      if (s.s < pos) return;
+      if (s.s > pos) box.appendChild(document.createTextNode(text.slice(pos, s.s)));
+      var differs = otherKeys && !otherKeys[s.c + "|" + s.s + "|" + s.e];
+      var tip = s.c + (meaning(s) ? ": " + meaning(s) : "") + (s.i ? ". Did not re-parse from its words" : "") + (differs ? ". Not in the other marking" : "");
+      box.appendChild(h("mark", { class: "sp sp-" + s.c + (differs ? " diff" : "") + (s.i ? " issue" : ""), title: tip }, text.slice(s.s, s.e)));
+      pos = s.e;
+    });
+    if (pos < text.length) box.appendChild(document.createTextNode(text.slice(pos)));
+    return box;
+  }
+  function keys(spans) { var k = {}; (spans || []).forEach(function (s) { k[s.c + "|" + s.s + "|" + s.e] = true; }); return k; }
+
+  function card(p) {
+    var result = (job.byRun[job.shown] || {})[p.id];
+    var el = h("article", { class: "prov" + (result ? "" : " waiting"), id: "card-" + p.id });
+    var head = h("div", null, h("span", { class: "cite" }, p.cite));
+    if (!result) {
+      head.appendChild(h("span", { class: "usa-tag bg-base" }, "Waiting"));
+      el.appendChild(head);
+      el.appendChild(h("div", { class: "rowline" }, h("span", null, "Text"), h("div", null, p.text)));
+      return el;
+    }
+    var hk = p.hand ? keys(p.hand) : null, mk = keys(result.spans);
+    var failed = result.spans.some(function (s) { return s.i; });
+    var same = hk && Object.keys(hk).length === Object.keys(mk).length && Object.keys(hk).every(function (k) { return mk[k]; });
+    if (failed) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink" }, "Failed a check"));
+    else if (!hk) head.appendChild(h("span", { class: "usa-tag bg-base" }, "No hand marks to compare"));
+    else head.appendChild(h("span", { class: "usa-tag " + (same ? "bg-success-dark" : "bg-secondary-dark") }, same ? "Matches the hand marks" : "Differs from the hand marks"));
+    if (result.cached) head.appendChild(h("span", { class: "usa-tag bg-base-lighter text-ink margin-left-05" }, "From cache"));
+    if (result.dropped) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, result.dropped + " not word for word, dropped"));
+    el.appendChild(head);
+    el.appendChild(h("div", { class: "rowline" }, h("span", null, "Model"), marked(p.text, result.spans, hk)));
+    if (p.hand) el.appendChild(h("div", { class: "rowline" }, h("span", null, "By hand"), marked(p.text, p.hand, mk)));
+    return el;
+  }
+  function drawProvisions() {
+    var box = $("provs");
+    box.textContent = "";
+    job.provisions.forEach(function (p) { box.appendChild(card(p)); });
+  }
+  function drawTabs() {
+    var box = $("run-tabs");
+    box.textContent = "";
+    if (job.runs < 2) return;
+    var ul = h("ul", { class: "usa-button-group usa-button-group--segmented margin-bottom-2" });
+    for (var r = 1; r <= job.runs; r++) (function (r) {
+      ul.appendChild(h("li", { class: "usa-button-group__item" },
+        h("button", { type: "button", class: "usa-button" + (r === job.shown ? "" : " usa-button--outline"),
+          "aria-pressed": String(r === job.shown), onclick: function () { job.shown = r; drawTabs(); drawProvisions(); } }, "Run " + r)));
+    })(r);
+    box.appendChild(ul);
+  }
+  function drawScores() {
+    var body = $("scores");
+    body.textContent = "";
+    for (var r = 1; r <= job.runs; r++) {
+      var s = job.summaries[r];
+      body.appendChild(h("tr", null, h("th", { scope: "row" }, String(r)),
+        h("td", null, s ? String(s.candidate) : "…"),
+        h("td", null, s ? pct(s.precision) : "…"),
+        h("td", null, s ? pct(s.recall) : "…"),
+        h("td", null, s ? String(s.fabricated + s.misparse) : "…")));
+    }
+  }
+  function progress(text) {
+    var share = job.total ? Math.round(100 * job.done / job.total) : 0;
+    $("bar-fill").style.width = share + "%";
+    $("bar").setAttribute("aria-valuenow", String(share));
+    $("status").textContent = text || (job.done + " of " + job.total + " provision results in");
+  }
+  function finish(text, kind) {
+    if (job.source) { job.source.close(); job.source = null; }
+    $("stop").hidden = true;
+    C.running = null;
+    refresh();
+    if (text) say(text, kind);
+  }
+
+  function handle(e) {
+    if (e.type === "start") {
+      job.runs = e.runs; job.provisions = e.provisions; job.byRun = {}; job.summaries = {}; job.done = 0;
+      job.total = e.runs * e.provisions.length; job.shown = 1; job.model = e.model;
+      $("results").hidden = false; $("stability").textContent = "";
+      drawTabs(); drawProvisions(); drawScores(); progress("Starting…");
+    } else if (e.type === "run_start") {
+      if (e.run > 1) { job.shown = e.run; drawTabs(); drawProvisions(); }
+    } else if (e.type === "provision") {
+      (job.byRun[e.run] = job.byRun[e.run] || {})[e.id] = e;
+      job.done += 1;
+      progress("Run " + e.run + " of " + job.runs + ": " + job.done + " of " + job.total + " provision results in");
+      if (e.run === job.shown) {
+        var old = $("card-" + e.id), p = job.provisions.filter(function (x) { return x.id === e.id; })[0];
+        if (old && p) old.parentNode.replaceChild(card(p), old);
+      }
+    } else if (e.type === "run_done") {
+      job.summaries[e.run] = e.summary; drawScores();
+    } else if (e.type === "done") {
+      progress("Finished: " + job.done + " provision results");
+      if (e.stability) {
+        $("stability").textContent = "Stability: " + e.stability.in_every_run + " of " + e.stability.distinct +
+          " distinct spans appear in every run (" + pct(e.stability.share) + ").";
+      } else {
+        $("stability").textContent = "Run it more than once to see how stable the marks are.";
+      }
+      finish(job.model === "stand-in" ? "Finished. This was the stand-in: it answers from the hand marks, so a perfect score here says nothing about a model." : "Finished.", "info");
+    } else if (e.type === "stopped") {
+      progress("Stopped"); finish("Stopped. Results so far are kept in the cache.", "info");
+    } else if (e.type === "error") {
+      progress("Stopped on an error"); finish(e.message, "error");
+    }
+  }
+  function follow(id) {
+    job.id = id;
+    $("stop").hidden = false;
+    var source = new EventSource("api/events?job=" + id);
+    job.source = source;
+    source.onmessage = function (m) { handle(JSON.parse(m.data)); };
+    source.onerror = function () {
+      // The browser reconnects by itself and resumes from the last event it saw.
+      if (source.readyState === 2) finish("Lost the connection to the server. Reload the page to see whether the run is still going.", "error");
+    };
+  }
+
+  function refresh() {
+    return fetch("api/config").then(function (r) { return r.json(); }).then(function (config) {
+      var first = !C;
+      C = config;
+      if (first) {
+        C.models.forEach(function (m) {
+          $("model").appendChild(h("option", { value: m.id }, m.label + (m.ready ? "" : " (not available)")));
+        });
+        var ready = C.models.filter(function (m) { return m.ready && m.id !== "stand-in"; });
+        $("model").value = (ready[0] || C.models[0]).id;
+        $("runs").max = C.max_runs;
+        $("runs-hint").textContent = "From 1 to " + C.max_runs + ". More than one shows how stable the marks are.";
+        $("scope-hand-label").textContent = "Only the " + C.provisions_hand + " with hand marks to score against";
+        $("scope-all-label").textContent = "All " + C.provisions_all;
+        Object.keys(C.classes).forEach(function (c) { $("legend").appendChild(h("span", { class: "sp sp-" + c, title: C.classes[c] }, c)); });
+        if (C.running) follow(C.running);
+      }
+      describe();
+    });
+  }
+
+  ["model", "runs", "scope-hand", "scope-all"].forEach(function (id) { $(id).addEventListener("change", describe); });
+  $("runs").addEventListener("input", describe);
+  $("form").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    say("");
+    $("go").disabled = true;
+    fetch("api/run", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ model: $("model").value, runs: parseInt($("runs").value, 10), scope: scope(),
+                             context: $("context").checked, code: $("code").value }) })
+      .then(function (r) { return r.json().then(function (body) { return { ok: r.ok, body: body }; }); })
+      .then(function (res) {
+        if (!res.ok) { say(res.body.error || "The run could not start."); describe(); return; }
+        C.running = res.body.job;
+        follow(res.body.job);
+      })
+      .catch(function () { say("Could not reach the server."); describe(); });
+  });
+  $("stop").addEventListener("click", function () { fetch("api/stop", { method: "POST", body: "{}" }); $("status").textContent = "Stopping…"; });
+
+  refresh().catch(function () { say("Could not load the page's settings from the server."); });
+})();
+</script>
+</body>
+</html>

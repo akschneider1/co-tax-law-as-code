@@ -12,7 +12,8 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 | Amendment 87 text (`text/co-2026-amendment-87.xml`) | Proposed (1.8) ingested and marked. The rest of the measure is not. |
 | Grounding build (`tools/build_web.py`) | Working. 51 hand-marked spans located verbatim and re-parsed. Imports `textlib.py`. |
 | Viewer (`web/index.html`, USWDS 3.14.0) | Working. Checked in a browser: both parameters, every year, no script errors. |
-| LangExtract script (`tools/extract_langextract.py`) | Runs end to end against LangExtract 1.7.2 with a stand-in model. Never run against a real model. |
+| LangExtract script (`tools/extract_langextract.py`) | Run against Gemini 3.5 Flash for 22 of 31 provisions (free-tier quota). 72% precision, 76% recall on the 9 hand-marked provisions. Claude provider added, not yet run with a key. |
+| Live demo (`demo/server.py`, `.replit`) | Working locally with the stand-in and Gemini. Not yet tried on Replit. |
 | Scoring (`tools/evaluate.py`) | Working. Tried on altered copies of the hand marks. No real candidates yet. |
 | Current official statute text | Not ingested. The 2026 files are on `olls.info`, which was not allowed. |
 
@@ -21,7 +22,7 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 - **The statute text is out of date.** It comes from an unofficial mirror (public.law). Five values it gives differ from what the Department of Revenue publishes; see the README table. The amending provisions are not ingested.
 - **Most test cases are hand-derived** from the parameter files. The official checks cover the form-table rule only.
 - **Span marking is unreviewed.** A language model marked the spans; no lawyer has checked them.
-- **The LangExtract path has never met a real model.** Context, exact-match filtering, caching and scoring are built and exercised with a stand-in. Whether context helps on this text is unmeasured.
+- **The model run is partial and unadjudicated.** One model, one run, 22 of 31 provisions. Whether context helps on this text is unmeasured, and nobody has decided the disagreements with the hand marks.
 - **The tax-table method is inferred.** The Department does not state it. It reproduces every printed row that could be read.
 
 ### Environment notes

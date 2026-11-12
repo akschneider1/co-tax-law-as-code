@@ -1,0 +1,53 @@
+{
+  "provision": "/us/co/measure/2026/amendment-87/39-22-104/1.8/a",
+  "model": "gemini-3.5-flash",
+  "langextract": "1.7.2",
+  "passes": 1,
+  "with_context": true,
+  "run": 1,
+  "extractions": [
+    {
+      "extraction_class": "exception",
+      "extraction_text": "EXCEPT AS OTHERWISE PROVIDED IN SECTION 39-22-627",
+      "attributes": null,
+      "start": 0,
+      "end": 49,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "exception",
+      "extraction_text": "SUBJECT TO SUBSECTION (2) OF THIS SECTION",
+      "attributes": null,
+      "start": 51,
+      "end": 92,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "period",
+      "extraction_text": "ON OR AFTER JANUARY 1, 2027",
+      "attributes": {
+        "from": "2027-01-01",
+        "to": ""
+      },
+      "start": 135,
+      "end": 162,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "base",
+      "extraction_text": "FEDERAL TAXABLE INCOME, AS DETERMINED BY SECTION 63 OF THE INTERNAL REVENUE CODE",
+      "attributes": null,
+      "start": 194,
+      "end": 274,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "who",
+      "extraction_text": "EVERY INDIVIDUAL, ESTATE, AND TRUST",
+      "attributes": null,
+      "start": 279,
+      "end": 314,
+      "alignment_status": "match_exact"
+    }
+  ]
+}

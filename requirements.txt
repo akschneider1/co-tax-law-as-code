@@ -1,0 +1,4 @@
+# For the live demo (demo/server.py) and tools/extract_langextract.py only.
+# Hosts such as Replit install from this file. The rest of the project needs
+# nothing beyond the Python standard library.
+-r requirements-langextract.txt

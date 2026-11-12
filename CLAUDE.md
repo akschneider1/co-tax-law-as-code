@@ -24,5 +24,6 @@ All three must pass. `build_web.py` regenerates `web/index.html` from `web/templ
 - Where a value is unknown, leave it unrecorded so the engine refuses to compute. Do not guess.
 - Spans in `extractions/` must appear word for word in the provision.
 - The viewer uses USWDS. Do not add the official government banner, a seal or a .gov identifier: this is not a government site.
-- Everything except `tools/extract_langextract.py` must stay standard-library Python that runs on 3.8. Converting a PDF in `tools/snapshot_source.py` also needs the `pdftotext` program.
+- Everything except `tools/extract_langextract.py` must stay standard-library Python that runs on 3.8. `demo/server.py` is standard library too, and loads LangExtract only when a run starts.
+- The live demo (`demo/server.py`, `demo/index.html`) spends a model key's money when a run starts. Never weaken its limits or send a key to the page. Converting a PDF in `tools/snapshot_source.py` also needs the `pdftotext` program.
 - Say plainly in the README what is untested or unverified.
