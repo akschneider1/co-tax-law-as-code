@@ -71,7 +71,9 @@ python3 tools/build_web.py --extractions extractions/candidates.langextract.json
 
 `tools/evaluate.py` prints precision, recall and F1 by span class against the hand marks. It treats the hand marks as a reference, not as the truth: every disagreement is written to `extractions/adjudication.json` for a person to decide, and a second table shows the scores after those decisions. A candidate span that is not word for word in the text, or whose dates or number do not re-parse, marks the whole file not reliable whatever its scores. Give it several files from repeat runs to see how stable the marks are.
 
-Other options: `--no-context` to measure what the context is worth, `--replay` to rebuild from cached model output without a key, `--model gpt-4o` with `OPENAI_API_KEY`, or `--model gemma2:2b --model-url http://localhost:11434` for a local Ollama model. LangExtract has no Anthropic provider.
+Other options: `--no-context` to measure what the context is worth, `--replay` to rebuild from cached model output without a key, `--model gpt-4o` with `OPENAI_API_KEY`, or `--model gemma2:2b --model-url http://localhost:11434` for a local Ollama model.
+
+Claude models work too: `--model claude-opus-5-5` with `ANTHROPIC_API_KEY`. LangExtract has no Anthropic provider, so the script supplies a small one that calls the Anthropic SDK and hands the reply to LangExtract to parse and align. That path has reached the API but has not yet completed a request with a real key.
 
 ## The layers
 

@@ -9,6 +9,7 @@ Needs Python 3.10+, `pip install -r requirements-langextract.txt`, and a key:
     --ask-key                           prompts for it in the terminal, hidden, for this run only
 or  export LANGEXTRACT_API_KEY=...      (Gemini, the default)
 or  export OPENAI_API_KEY=...           with --model gpt-4o and langextract[openai]
+or  export ANTHROPIC_API_KEY=...        with --model claude-opus-5-5 and `pip install anthropic`
 or a local Ollama model                 with --model gemma2:2b --model-url http://localhost:11434
 
 What it does
@@ -194,9 +195,54 @@ def stand_in_model(lx, provisions, hand):
     return StandIn()
 
 
+def claude_model(model_id):
+    """A LangExtract model that calls Claude through the official Anthropic SDK.
+
+    LangExtract ships no Anthropic provider, so this supplies one: it sends
+    each prompt LangExtract builds as a single user message and hands the
+    reply back for LangExtract to parse and align. Needs `pip install
+    anthropic` and ANTHROPIC_API_KEY (or another credential the SDK finds).
+    """
+    import re
+
+    import anthropic
+    from langextract.core import base_model, types
+
+    # Name the API host outright. Some environments set ANTHROPIC_BASE_URL for
+    # their own tooling, and the key for this run belongs to api.anthropic.com.
+    client = anthropic.Anthropic(base_url="https://api.anthropic.com")
+
+    class Claude(base_model.BaseLanguageModel):
+        def infer(self, batch_prompts, **kwargs):
+            for prompt in batch_prompts:
+                response = client.beta.messages.create(
+                    model=model_id,
+                    max_tokens=16000,
+                    output_config={"effort": "medium"},
+                    # If a safety classifier declines, let the API retry on its default fallback model.
+                    betas=["server-side-fallback-2026-07-01"],
+                    fallbacks="default",
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                if response.stop_reason == "refusal":
+                    raise RuntimeError("Claude declined the request (stop_reason refusal)")
+                if response.stop_reason == "max_tokens":
+                    raise RuntimeError("Claude's reply was cut off at max_tokens")
+                if response.model != model_id:
+                    raise RuntimeError("the reply came from %s, not %s; not recorded as a %s result"
+                                       % (response.model, model_id, model_id))
+                text = "".join(block.text for block in response.content if block.type == "text").strip()
+                fenced = re.fullmatch(r"```(?:json)?\s*(.*?)\s*```", text, re.DOTALL)
+                yield [types.ScoredOutput(score=1.0, output=fenced.group(1) if fenced else text)]
+
+    return Claude()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Mark statute spans with LangExtract.")
-    parser.add_argument("--model", default="gemini-3.5-flash", help="LangExtract model id")
+    parser.add_argument("--model", default="gemini-3.5-flash",
+                        help="model id: a Gemini, OpenAI or Ollama model LangExtract knows, or a Claude model "
+                             "such as claude-opus-5-5, which is called through the Anthropic SDK")
     parser.add_argument("--model-url", default=None, help="for a local Ollama model")
     parser.add_argument("--passes", type=int, default=1,
                         help="extraction passes per provision; later passes add spans, they are not a vote")
@@ -228,7 +274,8 @@ def main():
         if not sys.stdin.isatty():
             print("--ask-key needs an interactive terminal; set the key as an environment variable instead.")
             return 2
-        variable = "OPENAI_API_KEY" if args.model.startswith(("gpt-", "o1", "o3", "o4")) else "LANGEXTRACT_API_KEY"
+        variable = ("ANTHROPIC_API_KEY" if args.model.startswith("claude-") else
+                    "OPENAI_API_KEY" if args.model.startswith(("gpt-", "o1", "o3", "o4")) else "LANGEXTRACT_API_KEY")
         os.environ[variable] = getpass.getpass("Model key for %s (input is hidden): " % args.model).strip()
 
     config = json.loads(CONFIG.read_text(encoding="utf-8"))
@@ -243,6 +290,12 @@ def main():
     options = {"model_url": args.model_url} if args.model_url else {}
     if args.dry_run:
         options["model"] = stand_in_model(lx, provisions, hand)
+    elif args.model.startswith("claude-"):
+        try:
+            options["model"] = claude_model(args.model)
+        except ImportError:
+            print("The Anthropic SDK is not installed: pip install anthropic")
+            return 2
     else:
         options["model_id"] = args.model
 
