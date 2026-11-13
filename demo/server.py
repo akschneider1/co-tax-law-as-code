@@ -4,16 +4,23 @@
 
 One page. Choose a model and a number of runs, press Run, and each provision
 appears as the model returns it: its spans highlighted in the statute's own
-words, checked word for word, re-parsed, and scored against the hand marks.
-Repeat runs show how stable the model's marks are.
+words, checked word for word and re-parsed. When a run ends, the marks are
+turned into a value for each tax year and set beside the value this project
+uses (mostly the Department of Revenue's) and the value in PolicyEngine's
+Colorado model. Repeat runs show how stable the model's marks are.
 
 The server itself is standard-library Python. Marking needs Python 3.10+ and
 `pip install -r requirements.txt` (LangExtract, and the Anthropic SDK for
 Claude models). Keys are read from the environment and never sent to the page:
   ANTHROPIC_API_KEY     Claude models (COTAX_CLAUDE_API_KEY is read first, if set)
   LANGEXTRACT_API_KEY   Gemini models
-With no key, the stand-in model still works: it answers from the hand marks,
-so it shows the pipeline and nothing about a model.
+With no key, the replay still works: it plays back the reference marks stored
+in extractions/extractions.json, which a language model made earlier and no
+person has reviewed. It shows the pipeline and says nothing new about a model.
+
+PolicyEngine's two Colorado parameter files are fetched from its public
+repository when first needed, not copied into this one (it is AGPL-3.0). If
+they cannot be reached, that column says so.
 
 Anyone who can open the page can spend the key's money, so there are limits,
 all settable in the environment:
@@ -31,9 +38,11 @@ import os
 import pathlib
 import queue
 import sys
+import re
 import threading
-import time
+import urllib.request
 from collections import Counter
+from decimal import Decimal
 from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import parse_qs, urlparse
@@ -41,8 +50,10 @@ from urllib.parse import parse_qs, urlparse
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from tools import evaluate  # noqa: E402
-from tools.textlib import index, load_sections  # noqa: E402
+import engine.co_rules  # noqa: E402,F401  (registers the rules build_web expects)
+from engine.core import Parameters  # noqa: E402
+from tools import build_web, evaluate  # noqa: E402
+from tools.textlib import attach_cross_refs, index, load_sections  # noqa: E402
 
 PORT = int(os.environ.get("PORT", "5000"))
 MAX_RUNS = max(1, int(os.environ.get("DEMO_MAX_RUNS", "3")))
@@ -101,39 +112,149 @@ def available_models():
         import anthropic  # noqa: F401
     except ImportError:
         have_anthropic = False
-    models = [{"id": STAND_IN, "label": "Stand-in (answers from the hand marks; no key, no cost)", "ready": True, "why": ""}]
+    models = [{"id": STAND_IN, "label": "Saved example (free, no model called)", "ready": True, "why": ""}]
     for model_id, label in CLAUDE_MODELS:
         why = ("" if claude_key() and have_anthropic else
-               "the Anthropic SDK is not installed" if claude_key() else "ANTHROPIC_API_KEY is not set")
+               "the Anthropic software is not installed" if claude_key() else "its key, ANTHROPIC_API_KEY, has not been added")
         models.append({"id": model_id, "label": label, "ready": not why, "why": why})
     for model_id, label in GEMINI_MODELS:
-        why = "" if os.environ.get("LANGEXTRACT_API_KEY") else "LANGEXTRACT_API_KEY is not set"
+        why = "" if os.environ.get("LANGEXTRACT_API_KEY") else "its key, LANGEXTRACT_API_KEY, has not been added"
         models.append({"id": model_id, "label": label, "ready": not why, "why": why})
     return models
 
 
 def corpus():
-    """The provisions a run can cover, with their text and hand marks located."""
+    """The provisions a run can cover."""
     sections = load_sections()
     by_id = index(sections)
     config = json.loads(evaluate.CONFIG.read_text(encoding="utf-8"))
     examples = set(config["example_provisions"])
-    reference_file = json.loads(evaluate.REFERENCE.read_text(encoding="utf-8"))
     texts = {pid: p["text"] for pid, p in by_id.items() if p["text"]}
-    reference = evaluate.locate(reference_file["groups"], texts, examples)
     cite = {p["id"]: s["citation"] + p["label"] for s in sections for p in s["provisions"]}
-    hand = {}
-    for (pid, cls, start, end), span in reference.items():
-        hand.setdefault(pid, []).append({"c": cls, "s": start, "e": end, "n": span.get("normalized")})
+    classes = json.loads(evaluate.REFERENCE.read_text(encoding="utf-8"))["classes"]
     targets = [pid for pid in sorted(texts) if pid not in examples]
     return {
-        "targets": targets, "texts": texts, "cite": cite, "reference": reference,
-        "hand": {pid: sorted(spans, key=lambda x: x["s"]) for pid, spans in hand.items()},
-        "classes": reference_file["classes"], "examples": len(examples),
+        "targets": targets, "texts": texts, "cite": cite, "classes": classes,
+        "core": [pid for pid in targets if pid in set(config["core_provisions"])],
+        "examples": [g for g in json.loads(evaluate.REFERENCE.read_text(encoding="utf-8"))["groups"]
+                     if g["provision"] in examples],
     }
 
 
 CORPUS = corpus()
+
+YEARS = range(2022, 2028)
+PARAMETERS = [("co.eitc.match_rate", "Earned income credit, as a share of the federal credit"),
+              ("co.income_tax.rate_schedule", "Income tax rate")]
+POLICYENGINE = {
+    "co.eitc.match_rate": "https://raw.githubusercontent.com/PolicyEngine/policyengine-us/main/"
+                          "policyengine_us/parameters/gov/states/co/tax/income/credits/eitc/match.yaml",
+    "co.income_tax.rate_schedule": "https://raw.githubusercontent.com/PolicyEngine/policyengine-us/main/"
+                                   "policyengine_us/parameters/gov/states/co/tax/income/rate.yaml",
+}
+policyengine_cache = {}
+policyengine_lock = threading.Lock()
+
+
+def policyengine_values(parameter_id):
+    """PolicyEngine's dated values for one parameter, or None if its file cannot be read.
+
+    Reads only the 'values:' block of the YAML, which is a list of 'date: number' lines.
+    """
+    with policyengine_lock:
+        if parameter_id not in policyengine_cache:
+            values = None
+            try:
+                with urllib.request.urlopen(POLICYENGINE[parameter_id], timeout=15) as response:
+                    text = response.read().decode("utf-8")
+                block = ("\n" + text).split("\nvalues:", 1)[1]
+                values = []
+                for line in block.splitlines()[1:]:
+                    if line.strip() and not line.startswith((" ", "#")):
+                        break  # the next top-level key ends the block
+                    match = re.match(r"\s+(\d{4}-\d{2}-\d{2}):\s*([0-9.]+)", line)
+                    if match:
+                        values.append((match.group(1), match.group(2)))
+                values = sorted(values) or None
+            except Exception:
+                values = None
+            policyengine_cache[parameter_id] = values
+        return policyengine_cache[parameter_id]
+
+
+def plain(value):
+    """A value as a list of brackets with tidy numbers, or None."""
+    if value is None:
+        return None
+    return [{"over": str(over.normalize() if over else 0), "rate": format(rate.normalize(), "f")}
+            for over, rate in build_web.canonical(value)]
+
+
+def year_values(groups):
+    """Turn one run's marks into a value per tax year, beside two other sources.
+
+    For each parameter and year: what the model's marks say the text gives, the
+    value this project uses and where it comes from, and PolicyEngine's value.
+    Spans whose dates or numbers did not re-parse are left out first.
+    """
+    clean = []
+    for group in groups:
+        flags = []
+        spans = []
+        for span in group["spans"]:
+            before = len(flags)
+            evaluate.check_parse(group["provision"], span, flags)
+            if len(flags) == before:
+                spans.append(span)
+        clean.append(dict(group, spans=spans))
+    sections = attach_cross_refs(load_sections())
+    by_id = build_web.ground(sections, {"groups": clean}, [])
+    recorded = Parameters()
+    tables = []
+    for parameter_id, title in PARAMETERS:
+        theirs = policyengine_values(parameter_id)
+        rows = []
+        for year in YEARS:
+            day = "%d-01-01" % year
+            hits = build_web.statute_value(by_id, parameter_id, day)
+            # A provision with several rates and no marked thresholds gives no usable value:
+            # taking its first rate would misstate what was marked.
+            note, usable = None, []
+            for hit in hits:
+                provision = by_id[hit["provision"]]
+                rates = sorted({Decimal(sp["normalized"]) for sp in provision["spans"] if sp["class"] == "value"})
+                if len(rates) > 1 and provision.get("derive") != "schedule":
+                    note = ("%d rates marked, from %s%% to %s%%, but no thresholds, so no bracket schedule can be built"
+                            % (len(rates), (rates[0] * 100).normalize(), (rates[-1] * 100).normalize()))
+                else:
+                    usable.append(hit)
+            hits = usable
+            readings = sorted({build_web.canonical(h["value"]) for h in hits})
+            entry = next((e for e in recorded.by_id[parameter_id]["values"]
+                          if e["effective_from"] <= day and (e.get("effective_to") is None or day <= e["effective_to"])), None)
+            pe = pe_since = None
+            if theirs:
+                earlier = [(date, value) for date, value in theirs if date <= day]
+                if earlier:
+                    pe_since, pe = earlier[-1]
+            model = plain(hits[0]["value"]) if len(readings) == 1 else None
+            used = plain(entry["value"]) if entry else None
+            rows.append({
+                "year": year,
+                "model": model,
+                "model_from": [CORPUS["cite"][h["provision"]] for h in hits],
+                "model_note": note,
+                "model_conflict": [plain(h["value"]) for h in hits] if len(readings) > 1 else None,
+                "used": used, "status": entry["status"] if entry else "not_recorded",
+                "policyengine": plain(pe) if pe else None,
+                # PolicyEngine records a value from a date until its next entry.
+                "policyengine_since": int(pe_since[:4]) if pe_since else None,
+                "agrees_used": None if model is None or used is None else model == used,
+                "agrees_policyengine": None if model is None or pe is None else model == plain(pe),
+            })
+        tables.append({"id": parameter_id, "title": title, "rows": rows,
+                       "policyengine_reached": theirs is not None})
+    return tables
 
 
 class Job:
@@ -143,7 +264,7 @@ class Job:
         self.events, self.cond = [], threading.Condition()
         self.cancel = threading.Event()
         self.finished = False
-        self.targets = [pid for pid in CORPUS["targets"] if scope == "all" or pid in CORPUS["hand"]]
+        self.targets = CORPUS["targets"] if scope == "all" else CORPUS["core"]
 
     def emit(self, kind, **data):
         with self.cond:
@@ -151,17 +272,6 @@ class Job:
             if kind in ("done", "error", "stopped"):
                 self.finished = True
             self.cond.notify_all()
-
-
-def summarise(reference, candidate, flags):
-    """Scores for one run against the hand marks, limited to the provisions in the run."""
-    rows = evaluate.score(reference, candidate, [])  # only the "all" row
-    _, n_ref, n_cand, exact, overlap = rows[0]
-    return {"reference": n_ref, "candidate": n_cand,
-            "precision": exact[0], "recall": exact[1], "f1": exact[2],
-            "overlap_precision": overlap[0], "overlap_recall": overlap[1],
-            "fabricated": sum(1 for f in flags if f[0] == "fabricated"),
-            "misparse": sum(1 for f in flags if f[0] == "misparse")}
 
 
 def run_job(job):
@@ -173,15 +283,14 @@ def run_job(job):
         extract, lx, env = engine["extract"], engine["lx"], engine["env"]
         dry = job.model == STAND_IN
         model_name, options = extract.model_options(lx, env, job.model, dry_run=dry)
-        reference = {k: v for k, v in CORPUS["reference"].items() if k[0] in job.targets}
         runs_located = []
 
         for run in range(1, job.runs + 1):
             job.emit("run_start", run=run)
             dropped, groups, lock = Counter(), [], threading.Lock()
-            failure = []
+            failure, totals = [], Counter()
 
-            def one(pid, run=run, dropped=dropped, groups=groups, lock=lock, failure=failure):
+            def one(pid, run=run, dropped=dropped, groups=groups, lock=lock, failure=failure, totals=totals):
                 if job.cancel.is_set() or failure:
                     return
                 try:
@@ -191,10 +300,13 @@ def run_job(job):
                         lx, engine["version"], env, pid, model_name, options, with_context=job.with_context,
                         run=run, replay=over_budget, use_cache=not dry)
                 except extract.CacheMiss:
-                    failure.append("This server has reached its limit of %d model calls. Restart it to reset." % MAX_CALLS)
+                    failure.append("This demo has used all %d of its paid model calls. The person hosting it can reset "
+                                   "the count by restarting the server. Provisions already marked are saved." % MAX_CALLS)
                     return
                 except Exception as exc:  # a provider error: quota, network, bad key
-                    failure.append("%s: %s" % (CORPUS["cite"][pid], " ".join(str(exc).split())[:400]))
+                    failure.append("The model service returned an error at %s, so the run stopped. Provisions already "
+                                   "marked are saved; start the run again to continue. The service said: %s"
+                                   % (CORPUS["cite"][pid], " ".join(str(exc).split())[:400]))
                     return
                 if not cached and not dry:
                     with state_lock:
@@ -211,6 +323,10 @@ def run_job(job):
                 spans = [{"c": cls, "s": start, "e": end, "n": span.get("normalized"),
                           "i": (cls, span["text"]) in bad}
                          for (_, cls, start, end), span in sorted(located.items(), key=lambda kv: kv[0][2])]
+                with lock:
+                    totals["returned"] += len(raw)
+                    totals["kept"] += len(spans)
+                    totals["failed"] += sum(1 for span in spans if span["i"])
                 job.emit("provision", run=run, id=pid, spans=spans, cached=cached, returned=len(raw), dropped=lost)
 
             with ThreadPoolExecutor(max_workers=WORKERS) as pool:
@@ -221,11 +337,12 @@ def run_job(job):
             if job.cancel.is_set():
                 job.emit("stopped")
                 return
-            flags = []
-            located = evaluate.locate(groups, CORPUS["texts"], set(), flags)
-            runs_located.append(located)
-            job.emit("run_done", run=run, summary=summarise(reference, located, flags),
-                     dropped=dict(dropped))
+            runs_located.append(evaluate.locate(groups, CORPUS["texts"], set(), []))
+            # The provisions shown to the model as examples carry their stored marks, so the
+            # years they cover are not left blank.
+            job.emit("run_done", run=run, values=year_values(groups + CORPUS["examples"]),
+                     summary={"returned": totals["returned"], "kept": totals["kept"],
+                              "not_verbatim": totals["returned"] - totals["kept"], "failed": totals["failed"]})
 
         stability = None
         if len(runs_located) > 1:
@@ -236,7 +353,8 @@ def run_job(job):
                          "unstable": sorted({"%s|%d|%d" % (k[0], k[2], k[3]) for k in union - everywhere})}
         job.emit("done", stability=stability)
     except Exception as exc:  # never leave the page waiting
-        job.emit("error", message="The run failed: %s" % " ".join(str(exc).split())[:400])
+        job.emit("error", message="Something went wrong on the server and the run stopped. Start it again; "
+                                  "provisions already marked are saved. Details: %s" % " ".join(str(exc).split())[:400])
 
 
 def start_job(body):
@@ -246,30 +364,30 @@ def start_job(body):
     if model not in models:
         return 400, {"error": "Choose a model from the list."}
     if not models[model]["ready"]:
-        return 400, {"error": "That model cannot run here: %s." % models[model]["why"]}
+        return 400, {"error": "%s is not set up on this server: %s." % (models[model]["label"], models[model]["why"])}
     try:
         runs = int(body.get("runs", 1))
     except (TypeError, ValueError):
-        return 400, {"error": "Runs must be a whole number."}
+        return 400, {"error": "Enter how many times to run it as a whole number."}
     if not 1 <= runs <= MAX_RUNS:
-        return 400, {"error": "Runs must be between 1 and %d." % MAX_RUNS}
-    scope = body.get("scope", "hand")
-    if scope not in ("hand", "all"):
+        return 400, {"error": "Enter a number of runs from 1 to %d." % MAX_RUNS}
+    scope = body.get("scope", "core")
+    if scope not in ("core", "all"):
         return 400, {"error": "Choose which provisions to mark."}
     if ACCESS_CODE and model != STAND_IN:
         supplied = str(body.get("code", ""))
         if not hmac.compare_digest(supplied.encode("utf-8"), ACCESS_CODE.encode("utf-8")):
-            return 403, {"error": "That access code is not right."}
+            return 403, {"error": "That access code is not right. Check it with the person hosting this demo and try again."}
     with state_lock:
         current = state["job"]
         if current is not None and not current.finished:
-            return 409, {"error": "A run is already in progress. Wait for it to finish, or stop it."}
+            return 409, {"error": "Someone has a run in progress, and this demo does one at a time. Try again in a few minutes."}
         job = Job(state["next_id"], model, runs, bool(body.get("context", True)), scope)
         state["next_id"] += 1
         state["job"] = job
     job.emit("start", model=model, runs=runs, context=job.with_context, scope=scope,
-             provisions=[{"id": pid, "cite": CORPUS["cite"][pid], "text": CORPUS["texts"][pid],
-                          "hand": CORPUS["hand"].get(pid)} for pid in job.targets])
+             provisions=[{"id": pid, "cite": CORPUS["cite"][pid], "text": CORPUS["texts"][pid]}
+                         for pid in job.targets])
     threading.Thread(target=run_job, args=(job,), daemon=True).start()
     return 200, {"job": job.id}
 
@@ -323,8 +441,8 @@ class Handler(BaseHTTPRequestHandler):
                 "calls_left": max(0, MAX_CALLS - made), "max_calls": MAX_CALLS,
                 "needs_code": bool(ACCESS_CODE), "workers": WORKERS,
                 "provisions_all": len(CORPUS["targets"]),
-                "provisions_hand": sum(1 for p in CORPUS["targets"] if p in CORPUS["hand"]),
-                "examples": CORPUS["examples"], "classes": CORPUS["classes"],
+                "provisions_core": len(CORPUS["core"]),
+                "examples": len(CORPUS["examples"]), "classes": CORPUS["classes"],
                 "running": job.id if job is not None and not job.finished else None,
             })
         if path == "/api/events":

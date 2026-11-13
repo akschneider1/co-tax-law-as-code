@@ -28,6 +28,10 @@ The calculator prints two tax figures: the amount the statutory rate gives, and 
 
 A one-page web app that runs the model marking in front of you. Choose a model and a number of runs, press Run, and each provision appears as the model returns it, with its spans highlighted in the statute's words and checked on the spot. Repeat runs show how stable the marks are.
 
+When a run ends, the page turns the model's marks into a value for each tax year and sets it beside two others: the value this project uses, which is the Department of Revenue's where it publishes one, and the value in PolicyEngine's Colorado model. A difference is not always the model's mistake: the statute text is known to be out of date, so a model that reads it faithfully disagrees with the Department for some years. PolicyEngine's two parameter files are fetched from its public repository when first needed and are not copied into this one, because PolicyEngine is AGPL-3.0. Only the dated values in those files are read.
+
+The demo does not score the model against the stored reference marks in `extractions/extractions.json`. Those were made by a language model and no person has reviewed them, so agreement with them is not accuracy. `tools/evaluate.py` still makes that comparison for anyone who wants it.
+
 ```bash
 pip install -r requirements.txt
 ```
@@ -38,7 +42,7 @@ python3 demo/server.py
 
 Then open http://localhost:5000. It needs Python 3.10 or later. The existing viewer is linked from the page.
 
-**Keys** are read from the environment and never sent to the page: `ANTHROPIC_API_KEY` for Claude models, `LANGEXTRACT_API_KEY` for Gemini. With neither, a stand-in model still works. It answers from the hand marks, so it shows the pipeline and nothing about a model.
+**Keys** are read from the environment and never sent to the page: `ANTHROPIC_API_KEY` for Claude models, `LANGEXTRACT_API_KEY` for Gemini (it is the Gemini API key; the name is LangExtract's). With neither, a replay still works. It plays back the stored reference marks, so it shows the pipeline and nothing new about a model.
 
 **On Replit:** import the repository (`https://replit.com/github.com/akschneider1/co-tax-law-as-code` imports the default branch), add the keys in the Secrets tool, and press Run. `.replit` and `requirements.txt` are set up for this. The Replit configuration has not been tried on Replit; it was written from Replit's documentation as summarised by a search engine.
 
@@ -46,14 +50,16 @@ Then open http://localhost:5000. It needs Python 3.10 or later. The existing vie
 
 | Variable | Default | What it limits |
 |---|---|---|
-| `DEMO_ACCESS_CODE` | not set | If set, a run with a paid model must supply it. Set this before making the app public. |
+| `DEMO_ACCESS_CODE` | not set | A phrase you choose. If set, a run with a paid model must supply it. Set this before making the app public. |
 | `DEMO_MAX_RUNS` | 3 | Runs per job |
 | `DEMO_MAX_CALLS` | 300 | Model calls the server makes before it must be restarted. Cached results do not count. |
 | `DEMO_WORKERS` | 4 | Provisions marked at once |
 
 One job runs at a time. Results are cached in `extractions/cache/`, so a repeat of the same run costs nothing.
 
-What has been tried: the stand-in and Gemini, in a browser, including the cache, the access code and the call limit. The Claude models reach the API but no Claude request has completed, because no Claude key was available.
+What has been tried: the replay and Gemini, in a browser, including the cache, the access code, the call limit and the comparison with PolicyEngine. The Claude models reach the API but no Claude request has completed, because no Claude key was available.
+
+What the one Gemini run showed, on the nine provisions that set the rate, the brackets and the credit share: every span it returned was word for word in the text. Its reading gives the same values as the stale statute text for 2022 to 2026, and so differs from the Department of Revenue for the same five year-values the project already records as conflicts. For 2027 it marked all six rates but no thresholds, so no bracket schedule could be built from its marks.
 
 ## See how a parameter is built from the text
 
