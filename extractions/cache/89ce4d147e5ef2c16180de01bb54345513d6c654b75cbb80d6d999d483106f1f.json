@@ -9,7 +9,7 @@
     {
       "extraction_class": "exception",
       "extraction_text": "EXCEPT AS OTHERWISE PROVIDED IN SECTION 39-22-627",
-      "attributes": null,
+      "attributes": {},
       "start": 0,
       "end": 49,
       "alignment_status": "match_exact"
@@ -17,7 +17,7 @@
     {
       "extraction_class": "exception",
       "extraction_text": "SUBJECT TO SUBSECTION (2) OF THIS SECTION",
-      "attributes": null,
+      "attributes": {},
       "start": 51,
       "end": 92,
       "alignment_status": "match_exact"
@@ -34,9 +34,17 @@
       "alignment_status": "match_exact"
     },
     {
+      "extraction_class": "effect",
+      "extraction_text": "IS IMPOSED",
+      "attributes": {},
+      "start": 180,
+      "end": 190,
+      "alignment_status": "match_exact"
+    },
+    {
       "extraction_class": "base",
       "extraction_text": "FEDERAL TAXABLE INCOME, AS DETERMINED BY SECTION 63 OF THE INTERNAL REVENUE CODE",
-      "attributes": null,
+      "attributes": {},
       "start": 194,
       "end": 274,
       "alignment_status": "match_exact"
@@ -44,7 +52,7 @@
     {
       "extraction_class": "who",
       "extraction_text": "EVERY INDIVIDUAL, ESTATE, AND TRUST",
-      "attributes": null,
+      "attributes": {},
       "start": 279,
       "end": 314,
       "alignment_status": "match_exact"

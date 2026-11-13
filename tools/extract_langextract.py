@@ -44,11 +44,11 @@ import json
 import os
 import pathlib
 import sys
-import textwrap
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from tools import dictionary as data_dictionary  # noqa: E402
 from tools.textlib import attach_cross_refs, context_for, index, load_sections  # noqa: E402
 
 HAND_MARKED = ROOT / "extractions" / "extractions.json"
@@ -56,29 +56,9 @@ CONFIG = ROOT / "extractions" / "config.json"
 CACHE = ROOT / "extractions" / "cache"
 OUTPUT = ROOT / "extractions" / "candidates.langextract.json"
 
-PROMPT = textwrap.dedent("""\
-    You are marking up one provision of a tax statute. Extract spans in order of
-    appearance, using the exact words of the text, in the same capitals. Do not
-    paraphrase. Do not let spans overlap. Use only these classes:
-      period     the tax years the provision covers. Attributes: "from" and "to"
-                 as ISO dates, inclusive, or "" when open-ended. "before January 1,
-                 2023" means to 2022-12-31.
-      value      the number the provision sets, as written. Attribute: "decimal",
-                 the number as a fraction, so "twenty percent" is "0.20".
-      threshold  an income amount where a rate starts or stops, as written.
-                 Attribute: "dollars", the amount in digits.
-      base       what the number is applied to.
-      who        who the provision applies to.
-      exception  a cross-reference that can displace the provision.
-      effect     a consequence other than a number, such as a refund or a repeal.
-    Mark every separate period phrase as its own span. If the provision sets no
-    number, extract no value span.
-    Many provisions cover only tax years that have ended, or are repealed by a
-    later provision. Mark them exactly as you would a current one: a period
-    that has ended is still a period. Never skip a provision because it has
-    expired.
-    The context before the examples is there to help you read the provision.
-    Extract spans from the provision only, never from the context.""")
+# The instructions are built from dictionary/dictionary.json, so the model is told
+# exactly what the validator enforces. Changing the dictionary changes the cache key.
+PROMPT = data_dictionary.prompt(data_dictionary.load())
 
 
 def attributes_for(span):
@@ -89,6 +69,8 @@ def attributes_for(span):
         return {"decimal": normalized}
     if span["class"] == "threshold":
         return {"dollars": normalized}
+    if span["class"] == "lifecycle":
+        return {"date": normalized}
     return {}
 
 
@@ -144,6 +126,8 @@ def to_span(extraction, classes, text, dropped):
         span["normalized"] = str(attrs.get("decimal", ""))
     elif cls == "threshold":
         span["normalized"] = str(attrs.get("dollars", ""))
+    elif cls == "lifecycle":
+        span["normalized"] = str(attrs.get("date", ""))
     return span
 
 
@@ -373,6 +357,8 @@ def main():
                         help="which repeat run this is; each run number is cached separately, so run 2 "
                              "calls the model again and can be compared with run 1")
     parser.add_argument("--no-context", action="store_true", help="send each provision without its context")
+    parser.add_argument("--core", action="store_true",
+                        help="mark only the core provisions named in extractions/config.json")
     parser.add_argument("--replay", action="store_true", help="use cached results only; fail on a miss")
     parser.add_argument("--dry-run", action="store_true",
                         help="use a stand-in model that answers from the hand marks; tests the plumbing only")
@@ -409,7 +395,10 @@ def main():
     from collections import Counter
     groups, dropped, sent, cached = [], Counter(), 0, 0
     stopped = None
+    core = set(env["config"]["core_provisions"])
     for provision_id in env["targets"]:
+        if args.core and provision_id not in core:
+            continue
         try:
             raw, was_cached = mark_provision(
                 lx, lx_version, env, provision_id, model_name, options, passes=args.passes,

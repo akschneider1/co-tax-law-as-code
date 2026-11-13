@@ -1,6 +1,10 @@
 {
   "id": "co.income_tax.rate_schedule",
   "description": "Colorado individual income tax rate schedule, applied to Colorado taxable income. A flat rate is a schedule with one bracket.",
+  "unit": "rate",
+  "shape": "marginal_rate",
+  "keys": ["tax_year", "federal_taxable_income"],
+  "resolution": ["statute_fixed", "certified_revenue", "legal_event"],
   "value_type": "bracket_schedule",
   "keyed_by": "first day of the income tax year (calendar-year filers assumed)",
   "values": [

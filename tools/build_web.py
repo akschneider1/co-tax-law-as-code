@@ -24,7 +24,7 @@ sys.path.insert(0, str(ROOT))
 import engine.co_rules  # noqa: E402,F401  (registers the rules)
 from engine.core import RULES, Parameters  # noqa: E402
 from tools.textlib import (  # noqa: E402
-    attach_cross_refs, load_sections, parse_dollars, parse_percent, parse_period)
+    attach_cross_refs, load_sections, parse_dollars, parse_effective_date, parse_percent, parse_period)
 
 YEARS = range(2022, 2028)
 
@@ -75,6 +75,12 @@ def ground(sections, extractions, errors):
                     record["normalized"] = str(parsed.normalize())
                     if parsed != Decimal(span["normalized"]):
                         errors.append("value mismatch in %s: text parses to %s, extraction says %s"
+                                      % (group["provision"], parsed, span["normalized"]))
+                elif span["class"] == "lifecycle":
+                    parsed = parse_effective_date(span["text"])
+                    record["normalized"] = parsed
+                    if parsed != span["normalized"]:
+                        errors.append("date mismatch in %s: text parses to %s, extraction says %s"
                                       % (group["provision"], parsed, span["normalized"]))
                 elif span["class"] == "threshold":
                     parsed = parse_dollars(span["text"])

@@ -6,7 +6,7 @@
   context_for          the surrounding material a reader (or a model) needs to
                        understand one provision: heading, lead-ins, definitions,
                        references and following provisos
-  parse_period / parse_percent / parse_dollars   deterministic readers for date
+  parse_period / parse_percent / parse_dollars / parse_effective_date   deterministic readers for date
                        phrases and number words, used to re-check model and
                        hand extractions. Case does not matter: ballot measures
                        print new text in capitals.
@@ -81,6 +81,14 @@ def parse_dollars(text):
     if not match:
         raise ValueError("not a dollar amount in words: %r" % text)
     return words_to_int(match.group(1))
+
+
+def parse_effective_date(text):
+    """'repealed, effective December 31, 2034' -> '2034-12-31'."""
+    match = re.search(r"effective " + DATE, text, re.IGNORECASE)
+    if not match:
+        raise ValueError("no effective date recognised in %r" % text)
+    return _date(match.groups()).isoformat()
 
 
 def _date(groups):

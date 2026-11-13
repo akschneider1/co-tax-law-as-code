@@ -1,16 +1,17 @@
 {
-  "provision": "/us/co/crs/39-22-123.5/2/b",
+  "provision": "/us/co/crs/39-22-123.5/2/c/I",
   "model": "gemini-3.5-flash",
   "langextract": "1.7.2",
   "passes": 1,
   "with_context": true,
+  "run": 1,
   "extractions": [
     {
       "extraction_class": "period",
-      "extraction_text": "on or after January 1, 2022, but before January 1, 2023",
+      "extraction_text": "on or after January 1, 2023, but before January 1, 2024",
       "attributes": {
-        "from": "2022-01-01",
-        "to": "2022-12-31"
+        "from": "2023-01-01",
+        "to": "2023-12-31"
       },
       "start": 32,
       "end": 87,
@@ -18,39 +19,47 @@
     },
     {
       "extraction_class": "period",
-      "extraction_text": "on or after January 1, 2026",
+      "extraction_text": "on January 1, 2025",
       "attributes": {
-        "from": "2026-01-01",
-        "to": ""
+        "from": "2025-01-01",
+        "to": "2025-12-31"
       },
-      "start": 121,
-      "end": 148,
+      "start": 128,
+      "end": 146,
       "alignment_status": "match_exact"
     },
     {
       "extraction_class": "who",
       "extraction_text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return",
       "attributes": null,
-      "start": 150,
-      "end": 249,
+      "start": 148,
+      "end": 247,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "effect",
+      "extraction_text": "is allowed an earned income tax credit against the taxes due under this article 22",
+      "attributes": null,
+      "start": 248,
+      "end": 330,
       "alignment_status": "match_exact"
     },
     {
       "extraction_class": "value",
-      "extraction_text": "twenty percent",
+      "extraction_text": "twenty-five percent",
       "attributes": {
-        "decimal": "0.20"
+        "decimal": "0.25"
       },
-      "start": 350,
-      "end": 364,
+      "start": 348,
+      "end": 367,
       "alignment_status": "match_exact"
     },
     {
       "extraction_class": "base",
       "extraction_text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year",
       "attributes": null,
-      "start": 368,
-      "end": 478,
+      "start": 371,
+      "end": 481,
       "alignment_status": "match_exact"
     }
   ]

@@ -1,8 +1,0 @@
-{
-  "provision": "/us/co/crs/39-22-123.5/2.7/c/II",
-  "model": "gemini-3.5-flash",
-  "langextract": "1.7.2",
-  "passes": 1,
-  "with_context": true,
-  "extractions": []
-}

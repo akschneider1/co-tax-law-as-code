@@ -4,6 +4,7 @@
   "langextract": "1.7.2",
   "passes": 1,
   "with_context": true,
+  "run": 1,
   "extractions": [
     {
       "extraction_class": "exception",
@@ -40,6 +41,14 @@
       },
       "start": 173,
       "end": 210,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "effect",
+      "extraction_text": "is imposed",
+      "attributes": null,
+      "start": 211,
+      "end": 221,
       "alignment_status": "match_exact"
     },
     {

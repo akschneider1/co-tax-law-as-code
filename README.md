@@ -59,7 +59,7 @@ One job runs at a time. Results are cached in `extractions/cache/`, so a repeat 
 
 What has been tried: the replay and Gemini, in a browser, including the cache, the access code, the call limit and the comparison with PolicyEngine. The Claude models reach the API but no Claude request has completed, because no Claude key was available.
 
-What the one Gemini run showed, on the nine provisions that set the rate, the brackets and the credit share: every span it returned was word for word in the text. Its reading gives the same values as the stale statute text for 2022 to 2026, and so differs from the Department of Revenue for the same five year-values the project already records as conflicts. For 2027 it marked all six rates but no thresholds, so no bracket schedule could be built from its marks.
+What the one Gemini run under the current instructions showed, on the nine core provisions: every span it returned was word for word in the text, and eight of the nine provisions were complete under the data dictionary. Its reading gives the same values as the stale statute text for 2022 to 2026, and so differs from the Department of Revenue for the same five year-values the project already records as conflicts. For 2027 it marked all six rates but no thresholds, so no bracket schedule could be built, and the page flags that provision as missing its thresholds.
 
 ## See how a parameter is built from the text
 
@@ -86,7 +86,7 @@ How the grounding works:
 
 `tools/extract_langextract.py` replaces the hand marking with a model call per provision through Google's LangExtract library. Two hand-marked provisions serve as the examples; the model marks the rest. Each provision is sent with the context a reader needs: its heading, the lead-in text above it, later provisions that modify it, and the text it cross-refers to.
 
-**Run once against a real model, in part.** Gemini 3.5 Flash, with context, has marked 22 of the 31 provisions; a free-tier daily quota stopped it there. On the 9 provisions that have hand marks it scored 72% precision and 76% recall on exact matches, and every span it returned was word for word in the text. No run without context, no repeat run and no Claude run has been made, and no person has decided the disagreements. The script has also been run end to end with a stand-in model that answers from the hand marks (`--dry-run`), which tests the plumbing only.
+**Run against one real model, on nine provisions.** Gemini 3.5 Flash, with context and the data dictionary's instructions, has marked the nine core provisions once. Every span it returned was word for word in the text. Eight of the nine carried every kind of span the dictionary requires for their type; in the 2027 bracket list it marked the six rates and none of the thresholds, although the instructions ask for them. Its results are cached in `extractions/cache/`. An earlier run under older instructions covered 22 provisions; its cache was removed when the instructions changed. No run without context, no repeat run, no run on all 31 provisions under the current instructions and no Claude run has been made, and no person has decided the disagreements. The script has also been run end to end with a stand-in model that answers from the stored marks (`--dry-run`), which tests the plumbing only.
 
 ```bash
 pip install -r requirements-langextract.txt
@@ -112,6 +112,24 @@ Other options: `--no-context` to measure what the context is worth, `--replay` t
 
 Claude models work too: `--model claude-opus-5-5` with `ANTHROPIC_API_KEY`. LangExtract has no Anthropic provider, so the script supplies a small one that calls the Anthropic SDK and hands the reply to LangExtract to parse and align. That path has reached the API but has not yet completed a request with a real key.
 
+## Data dictionary
+
+`dictionary/dictionary.json` is the single statement of what may be marked and recorded. It has three parts:
+
+- **Span classes.** Twelve, each with a definition written as a question, the attribute values it allows, and how its words are read into a value. Eight are active: `period`, `value`, `threshold`, `base`, `who`, `exception`, `effect` and `lifecycle`. Four are defined for the wider law and not yet used: `limit`, `term`, `index` and `nonoperative`.
+- **Provision types.** Twenty, each listing the span classes it requires. A provision that imposes a rate needs a period, a value, a base, who it applies to and the words that impose the tax; a bracket item needs a value and a threshold; a repeal clause needs a lifecycle span. Every ingested provision is assigned a type. Nine types are in use; the rest are defined from research on sections not ingested here, and three are provisional because the statute text behind them was not read.
+- **The parameter record.** Every parameter file must state its unit, its shape, what it is keyed by, and how its number is resolved: fixed in statute, tied to certified revenue, set by a forecast, and so on.
+
+The dictionary is enforced, not advisory:
+
+- `tools/validate.py` fails if a marked span uses a class or attribute value the dictionary lacks, if a marked provision lacks a class its type requires, if an ingested provision has no type, or if a parameter file lacks a required field.
+- `tools/extract_langextract.py` builds the model's instructions from the dictionary, so the model is told what the validator checks.
+- The live demo checks each run against it and shows which provisions are complete.
+
+To change it, open a pull request that states the reason and raises the version number. A change to an active class makes cached model results stale, because the instructions change.
+
+It is a draft. It was designed from the research in `reports/Colorado income tax span dictionary.md` and has been applied only to the 33 provisions ingested here. That report is a synthesis by a language model: parts of it rest on search summaries, which it marks, and its claims have not been re-checked against the sources. The 14 provisions with a type but no marks are listed by the validator as not yet marked.
+
 ## The layers
 
 | Layer | Where | What it holds |
@@ -135,6 +153,8 @@ Every claim this README makes about checking is enforced by a script. If a row h
 | Every quote from an agency or the legislature is real | `tools/validate.py` | Finds the quote, word for word, in the stored copy, and checks the copy's hash |
 | A value called agency-published has a checked agency quote | `tools/validate.py` | Fails otherwise |
 | Marked spans are the statute's own words | `tools/build_web.py` | Finds each span verbatim |
+| Marks follow the data dictionary | `tools/validate.py` | Checks each span's class and attributes, and the classes each provision's type requires |
+| Parameters carry unit, shape, keys and resolution | `tools/validate.py` | Fails a parameter file without them |
 | Dates, percentages and dollar amounts are read correctly | `tools/build_web.py` | Re-parses the words with ordinary code |
 | A value attributed to a provision is what the provision says | `tools/build_web.py` | Derives the value from the spans and compares |
 | The form-table rule matches the Department's tables | `tools/run_tests.py` | 4,024 checks against 2,012 printed rows |
