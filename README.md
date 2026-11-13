@@ -128,7 +128,7 @@ The dictionary is enforced, not advisory:
 
 To change it, open a pull request that states the reason and raises the version number. A change to an active class makes cached model results stale, because the instructions change.
 
-It is a draft. It was designed from the research in `reports/Colorado income tax span dictionary.md` and has been applied only to the 33 provisions ingested here. That report is a synthesis by a language model: parts of it rest on search summaries, which it marks, and I did not re-check its claims. The 14 provisions with a type but no marks are listed by the validator as not yet marked.
+It is a draft. It was designed from the research in `reports/Colorado income tax span dictionary.md` and has been applied only to the 33 provisions ingested here. That report is a synthesis by a language model: parts of it rest on search summaries, which it marks, and its claims have not been re-checked against the sources. The 14 provisions with a type but no marks are listed by the validator as not yet marked.
 
 ## The layers
 
