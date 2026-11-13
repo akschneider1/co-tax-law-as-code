@@ -22,7 +22,8 @@ All three must pass. `build_web.py` regenerates `web/index.html` from `web/templ
 - `tests/tax_tables.json` is generated. Regenerate it with `python3 tools/make_table_tests.py`; do not edit it by hand.
 - Keep the README's "What each claim rests on" table true: a claim about checking needs a script that enforces it.
 - Where a value is unknown, leave it unrecorded so the engine refuses to compute. Do not guess.
-- Spans in `extractions/` must appear word for word in the provision.
+- Spans in `extractions/` must appear word for word in the provision, and must follow `dictionary/dictionary.json`: an active class, allowed attribute values, and the classes the provision's type requires.
+- Change `dictionary/dictionary.json` only with a stated reason and a version bump. Changing an active class changes the model's instructions and makes `extractions/cache/` stale.
 - The viewer uses USWDS. Do not add the official government banner, a seal or a .gov identifier: this is not a government site.
 - Everything except `tools/extract_langextract.py` must stay standard-library Python that runs on 3.8. `demo/server.py` is standard library too, and loads LangExtract only when a run starts.
 - The live demo (`demo/server.py`, `demo/index.html`) spends a model key's money when a run starts. Never weaken its limits or send a key to the page. Converting a PDF in `tools/snapshot_source.py` also needs the `pdftotext` program.

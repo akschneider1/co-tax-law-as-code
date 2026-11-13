@@ -17,6 +17,7 @@
 .sp-exception { background: #f8dfe2; color: #8b0a03; }
 .sp-effect { background: #ccecf2; color: #0e4f5c; }
 .sp-threshold { background: #ffe6cf; color: #5f3a12; }
+.sp-lifecycle { background: #e6e6e6; color: #2e2e2a; }
 .prov.superseded .label::after { content: " (ends before 2027 if Amendment 87 takes effect)"; font-weight: 400; font-style: italic; }
 .legend .sp { font-size: .82rem; margin-right: 4px; }
 .prov { padding: 6px 10px; border-left: 4px solid transparent; margin-left: calc(var(--depth) * 16px); line-height: 1.6; }
@@ -126,6 +127,7 @@ tr.selected td, tr.selected th { background: #e7f6f8; }
     if (s.class === "period") return period(s.normalized);
     if (s.class === "value") return pct(s.normalized);
     if (s.class === "threshold") return dollars(s.normalized);
+    if (s.class === "lifecycle") return "repealed or effective " + s.normalized;
     return null;
   }
   function period(n) {

@@ -17,6 +17,7 @@
 .sp-exception { background: #f8dfe2; color: #8b0a03; }
 .sp-effect { background: #ccecf2; color: #0e4f5c; }
 .sp-threshold { background: #ffe6cf; color: #5f3a12; }
+.sp-lifecycle { background: #e6e6e6; color: #2e2e2a; }
 .sp.issue { outline: 2px dashed #936f38; outline-offset: 1px; }
 .legend { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; }
 .legend .sp { font-size: .82rem; }
@@ -113,11 +114,11 @@ fieldset { border: 0; padding: 0; margin: 0; }
           <div class="usa-table-container--scrollable margin-top-2" tabindex="0">
             <table class="usa-table usa-table--borderless usa-table--compact margin-0 font-body-2xs">
               <caption class="usa-sr-only">Checks on the spans from each run</caption>
-              <thead><tr><th scope="col">Run</th><th scope="col">Spans marked</th><th scope="col">Exact quotes</th><th scope="col">Unreadable</th></tr></thead>
+              <thead><tr><th scope="col">Run</th><th scope="col">Spans marked</th><th scope="col">Exact quotes</th><th scope="col">Unreadable</th><th scope="col">Complete</th></tr></thead>
               <tbody id="scores"></tbody>
             </table>
           </div>
-          <p class="font-body-3xs text-base-dark margin-top-1">Exact quotes: spans that appear word for word in the statute. Any other span is dropped. Unreadable: spans marked as tax years, a percentage or a dollar amount that could not be read as one, so they are left out of the values below.</p>
+          <p class="font-body-3xs text-base-dark margin-top-1">Exact quotes: spans that appear word for word in the statute. Any other span is dropped. Unreadable: spans marked as tax years, a percentage or a dollar amount that could not be read as one, so they are left out of the values below. Complete: provisions whose spans include every kind the data dictionary requires for that type of provision.</p>
           <p class="font-body-2xs margin-bottom-0" id="stability"></p>
         </div>
       </section>
@@ -126,7 +127,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
         <div class="border border-base-lighter radius-md padding-2 bg-white">
           <h2 class="font-heading-lg margin-top-0" id="prov-h">Provisions</h2>
           <p class="legend margin-y-1" id="legend"><span class="font-body-xs text-base-dark margin-right-1">Kinds of span:</span></p>
-          <p class="font-body-3xs text-base-dark margin-top-0">Point at a span to see what it was read as. A dashed outline means its dates or number could not be read.</p>
+          <p class="font-body-3xs text-base-dark margin-top-0">Point at a span to see what it was read as. A dashed outline means its dates or number could not be read. When a run ends, each provision is checked against the data dictionary: "Missing" names a kind of span that type of provision must have.</p>
           <div id="run-tabs"></div>
           <div id="provs"><p class="text-base-dark">No run yet. Choose a model and select Start run. Each provision will appear here with its spans highlighted.</p></div>
         </div>
@@ -153,7 +154,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 <script>
 (function () {
   var C = null;                                  // server configuration
-  var job = { id: null, runs: 0, provisions: [], byRun: {}, summaries: {}, values: {}, done: 0, total: 0, shown: 1, source: null, model: "" };
+  var job = { id: null, runs: 0, provisions: [], byRun: {}, summaries: {}, values: {}, gaps: {}, done: 0, total: 0, shown: 1, source: null, model: "" };
 
   function h(tag, attrs) {
     var el = document.createElement(tag);
@@ -181,6 +182,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     if (s.c === "period") return period(s.n);
     if (s.c === "value" && s.n) return (+(parseFloat(s.n) * 100).toFixed(2)) + "%";
     if (s.c === "threshold" && s.n) return "$" + Number(s.n).toLocaleString("en-US");
+    if (s.c === "lifecycle" && s.n) return "repealed or effective " + s.n;
     return null;
   }
   function say(text, kind) {
@@ -209,7 +211,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
     spans.forEach(function (s) {
       if (s.s < pos) return;
       if (s.s > pos) box.appendChild(document.createTextNode(text.slice(pos, s.s)));
-      var tip = s.c + (meaning(s) ? ": " + meaning(s) : "") + (s.i ? ". Could not be read as " + (s.c === "period" ? "tax years" : s.c === "value" ? "a percentage" : "a dollar amount") : "");
+      var tip = s.c + (meaning(s) ? ": " + meaning(s) : "") + (s.i ? ". Could not be read as " + (s.c === "period" ? "tax years" : s.c === "value" ? "a percentage" : s.c === "lifecycle" ? "a date" : "a dollar amount") : "");
       box.appendChild(h("mark", { class: "sp sp-" + s.c + (s.i ? " issue" : ""), title: tip }, text.slice(s.s, s.e)));
       pos = s.e;
     });
@@ -281,6 +283,10 @@ fieldset { border: 0; padding: 0; margin: 0; }
     if (failed) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, failed + " unreadable"));
     if (result.cached) head.appendChild(h("span", { class: "usa-tag bg-base-lighter text-ink margin-left-05" }, "Saved result, reused"));
     if (result.dropped) head.appendChild(h("span", { class: "usa-tag bg-warning text-ink margin-left-05" }, result.dropped + " dropped: not an exact quote"));
+    var gaps = (job.gaps[job.shown] || {})[p.id];
+    if (gaps && gaps.missing.length) head.appendChild(h("span", { class: "usa-tag bg-secondary-dark margin-left-05" }, "Missing: " + gaps.missing.join(", ")));
+    else if (gaps) head.appendChild(h("span", { class: "usa-tag bg-success-dark margin-left-05" }, "Complete"));
+    if (gaps) head.appendChild(h("span", { class: "font-body-3xs text-base-dark margin-left-1" }, gaps.type.replace(/_/g, " ")));
     el.appendChild(head);
     el.appendChild(h("div", { class: "rowline" }, h("span", null, "Spans"), marked(p.text, result.spans)));
     return el;
@@ -310,7 +316,8 @@ fieldset { border: 0; padding: 0; margin: 0; }
       body.appendChild(h("tr", null, h("th", { scope: "row" }, String(r)),
         h("td", null, s ? String(s.returned) : "…"),
         h("td", null, s ? s.kept + " of " + s.returned : "…"),
-        h("td", null, s ? String(s.failed) : "…")));
+        h("td", null, s ? String(s.failed) : "…"),
+        h("td", null, s ? s.complete + " of " + s.provisions : "…")));
     }
   }
   function progress(text) {
@@ -329,7 +336,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 
   function handle(e) {
     if (e.type === "start") {
-      job.runs = e.runs; job.provisions = e.provisions; job.byRun = {}; job.summaries = {}; job.values = {}; job.done = 0;
+      job.runs = e.runs; job.provisions = e.provisions; job.byRun = {}; job.summaries = {}; job.values = {}; job.gaps = {}; job.done = 0;
       job.total = e.runs * e.provisions.length; job.shown = 1; job.model = e.model;
       $("results").hidden = false; $("stability").textContent = "";
       drawTabs(); drawProvisions(); drawScores(); drawValues(); progress("Starting…");
@@ -344,7 +351,8 @@ fieldset { border: 0; padding: 0; margin: 0; }
         if (old && p) old.parentNode.replaceChild(card(p), old);
       }
     } else if (e.type === "run_done") {
-      job.summaries[e.run] = e.summary; job.values[e.run] = e.values; drawScores(); drawValues();
+      job.summaries[e.run] = e.summary; job.values[e.run] = e.values; job.gaps[e.run] = e.gaps;
+      drawScores(); drawValues(); if (e.run === job.shown) drawProvisions();
     } else if (e.type === "done") {
       progress("Finished. " + job.done + " of " + job.total + " provisions marked.");
       if (e.stability) {

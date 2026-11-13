@@ -36,7 +36,8 @@ from decimal import Decimal, InvalidOperation
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from tools.textlib import index, load_sections, parse_dollars, parse_percent, parse_period  # noqa: E402
+from tools.textlib import (  # noqa: E402
+    index, load_sections, parse_dollars, parse_effective_date, parse_percent, parse_period)
 
 REFERENCE = ROOT / "extractions" / "extractions.json"
 CONFIG = ROOT / "extractions" / "config.json"
@@ -89,6 +90,9 @@ def check_parse(provision, span, flags):
         elif span["class"] == "threshold":
             if parse_dollars(span["text"]) != int(span.get("normalized")):
                 flags.append(("misparse", provision, "threshold", span["text"]))
+        elif span["class"] == "lifecycle":
+            if parse_effective_date(span["text"]) != span.get("normalized"):
+                flags.append(("misparse", provision, "lifecycle", span["text"]))
     except (ValueError, InvalidOperation, TypeError):
         flags.append(("misparse", provision, span["class"], span["text"]))
 

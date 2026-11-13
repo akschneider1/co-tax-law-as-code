@@ -1,6 +1,10 @@
 {
   "id": "co.eitc.match_rate",
   "description": "Colorado earned income tax credit as a fraction of the federal earned income credit.",
+  "unit": "rate",
+  "shape": "scalar",
+  "keys": ["tax_year"],
+  "resolution": ["statute_fixed", "forecast_trigger"],
   "value_type": "rate",
   "keyed_by": "first day of the income tax year (calendar-year filers assumed)",
   "values": [

@@ -1,6 +1,10 @@
 {
   "id": "co.income_tax.tax_table",
   "description": "How the Department of Revenue's printed tax table arrives at the tax for Colorado taxable income of $50,000 or less: income falls in a band, and the tax is the year's rate applied to the middle of the band, rounded to whole dollars. The band layout and the midpoint method are not stated by the Department. They were inferred from the tables and are checked against every table row in tests/tax_table_cases.json.",
+  "unit": "none",
+  "shape": "rule",
+  "keys": ["tax_year", "colorado_taxable_income"],
+  "resolution": ["agency_practice"],
   "value_type": "tax_table",
   "keyed_by": "first day of the income tax year (calendar-year filers assumed)",
   "values": [

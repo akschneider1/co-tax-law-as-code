@@ -1,9 +1,10 @@
 {
-  "provision": "/us/co/crs/39-22-123.5/2.7/c/I",
+  "provision": "/us/co/crs/39-22-123.5/2/d/I",
   "model": "gemini-3.5-flash",
   "langextract": "1.7.2",
   "passes": 1,
   "with_context": true,
+  "run": 1,
   "extractions": [
     {
       "extraction_class": "period",
@@ -18,10 +19,18 @@
     },
     {
       "extraction_class": "who",
-      "extraction_text": "a resident individual",
-      "attributes": null,
+      "extraction_text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return",
+      "attributes": {},
       "start": 55,
-      "end": 76,
+      "end": 154,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "effect",
+      "extraction_text": "is allowed an earned income tax credit against the taxes due under this article 22",
+      "attributes": {},
+      "start": 155,
+      "end": 237,
       "alignment_status": "match_exact"
     },
     {
@@ -30,16 +39,16 @@
       "attributes": {
         "decimal": "0.38"
       },
-      "start": 177,
-      "end": 197,
+      "start": 255,
+      "end": 275,
       "alignment_status": "match_exact"
     },
     {
       "extraction_class": "base",
-      "extraction_text": "the federal credit that the resident individual would have been allowed under section 32 (n)(1) of the internal revenue code, notwithstanding the date limitation set forth in section 32 (n) of the internal revenue code as specified in section 9621 (a) of the “American Rescue Plan Act of 2021”, Pub.L. 117-2",
-      "attributes": null,
-      "start": 201,
-      "end": 508,
+      "extraction_text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year",
+      "attributes": {},
+      "start": 279,
+      "end": 389,
       "alignment_status": "match_exact"
     }
   ]

@@ -1,0 +1,733 @@
+{
+  "about": "The data dictionary for this project: the span classes that may be marked in a provision, the types a provision can have and the classes each type requires, and the fields every parameter must carry. tools/validate.py enforces it on the reference marks and the parameter files, and tools/extract_langextract.py builds the model's instructions from it, so the instructions and the checks cannot drift apart.",
+  "version": "0.1.0",
+  "status": "Draft. Designed from docs/research and reports/Colorado income tax span dictionary.md, and applied only to the 33 provisions ingested so far. Classes and types marked 'defined' or 'provisional' have never been used on real text.",
+  "change_policy": "Change this file through a pull request that states the reason, and raise the version: the last number for wording, the middle number when a class, attribute value or type is added, the first number when one is removed or its meaning changes. A change to an active class or type makes every cached model result stale, because the instructions change.",
+  "class_statuses": {
+    "active": "Marked today, sent to the model, and enforced.",
+    "defined": "Agreed in principle; no ingested provision needs it yet, so it is not sent to the model."
+  },
+  "inheritance": "A provision's required period, who, base or exception may be marked in a provision above it (its lead-in). A lead-in's required value or threshold may be marked in a provision below it (its list items).",
+  "boundary_rules": [
+    "A span is the shortest run of words that still reads on its own.",
+    "A span is copied exactly from the provision, in the same capitals, and carries no leading or trailing punctuation.",
+    "A value includes its unit word. An exception includes its opening words.",
+    "Spans do not overlap. A reference inside a base is part of the base, not a second span.",
+    "A span never crosses a provision boundary.",
+    "Text that repeats is marked at each occurrence, except in a list that restates earlier items, where each number is marked once, at its first appearance."
+  ],
+  "classes": {
+    "period": {
+      "label": "The tax years or other span of time the rule covers",
+      "status": "active",
+      "definition": "Which span of time does the rule apply to or measure? Includes tax years, state fiscal years, event windows, deadlines and durations. A period limited to past tax years is still a period. Excludes the dates on which the text itself is repealed or takes effect; those are lifecycle.",
+      "attributes": {
+        "kind": [
+          "tax_year",
+          "fiscal_year",
+          "event_window",
+          "deadline",
+          "duration"
+        ]
+      },
+      "normalised": "{from, to} as ISO dates, inclusive; null when open-ended. 'before January 1, 2023' ends on 2022-12-31.",
+      "checked_by": "tools/textlib.py parse_period"
+    },
+    "value": {
+      "label": "The number the provision sets",
+      "status": "active",
+      "definition": "What number does the provision set? Includes rates, shares of another amount, dollar amounts and counts, and changes to any of these. The span includes its unit word, such as 'percent'.",
+      "attributes": {
+        "unit": [
+          "rate",
+          "usd",
+          "count",
+          "year"
+        ],
+        "role": [
+          "level",
+          "delta",
+          "replacement",
+          "derived"
+        ],
+        "per": [
+          "child",
+          "policy",
+          "beneficiary",
+          "return"
+        ]
+      },
+      "normalised": "A decimal string in which 1.0 is 100 percent. Only rates stated as a level are parsed today.",
+      "checked_by": "tools/textlib.py parse_percent"
+    },
+    "threshold": {
+      "label": "A level of income or another tested quantity where a result starts, stops or changes",
+      "status": "active",
+      "definition": "At what level of a tested quantity does a result start, stop or change? Includes bracket edges, eligibility gates, phase-out starts and steps, trigger tiers and ages. In a bracket list, every dollar amount that begins or ends a bracket is a threshold, not part of a base.",
+      "attributes": {
+        "tests": [
+          "federal_taxable_income",
+          "federal_agi",
+          "modified_agi",
+          "age",
+          "days",
+          "state_excess_revenue",
+          "adjustment_factor"
+        ],
+        "role": [
+          "bracket_edge",
+          "gate",
+          "phase_out_start",
+          "step",
+          "trigger"
+        ]
+      },
+      "normalised": "A whole number of dollars. Only dollar amounts are parsed today; inclusive and exclusive edges are not yet recorded.",
+      "checked_by": "tools/textlib.py parse_dollars"
+    },
+    "base": {
+      "label": "What the number is applied to",
+      "status": "active",
+      "definition": "What quantity is the number applied to? Includes federal amounts named by reference, and amounts a person 'would have been allowed'. Does not include the dollar edges of a bracket; those are thresholds.",
+      "attributes": {
+        "measure": [
+          "federal_taxable_income",
+          "federal_agi",
+          "modified_agi",
+          "federal_credit",
+          "expense",
+          "credit_amount",
+          "other"
+        ],
+        "counterfactual": [
+          "true",
+          "false"
+        ]
+      },
+      "normalised": "None.",
+      "checked_by": null
+    },
+    "who": {
+      "label": "Who the provision applies to",
+      "status": "active",
+      "definition": "Which person or body does the rule address? Includes taxpayers and the official who must act.",
+      "attributes": {
+        "role": [
+          "taxpayer",
+          "unit",
+          "official"
+        ],
+        "residency": [
+          "resident",
+          "part_year",
+          "nonresident",
+          "any"
+        ]
+      },
+      "normalised": "None.",
+      "checked_by": null
+    },
+    "exception": {
+      "label": "A cross-reference that can displace or condition the provision",
+      "status": "active",
+      "definition": "Which cross-reference displaces, conditions or stacks on this provision? The span includes its opening words, such as 'Except as otherwise provided in'. An exception is always its own span, never part of the span it qualifies.",
+      "attributes": {
+        "kind": [
+          "displaced_by",
+          "subject_to",
+          "modified_by",
+          "in_addition_to",
+          "notwithstanding",
+          "carve_out"
+        ]
+      },
+      "normalised": "None; the reference is resolved separately by tools/textlib.py find_cross_refs.",
+      "checked_by": null
+    },
+    "effect": {
+      "label": "A legal consequence other than a number",
+      "status": "active",
+      "definition": "What legal consequence follows, other than a number? Includes a tax being imposed, a credit being allowed or refunded, and a rule about the order in which steps apply.",
+      "attributes": {
+        "kind": [
+          "imposed",
+          "allowed",
+          "denied",
+          "added",
+          "subtracted",
+          "refunded",
+          "carried_forward",
+          "apportioned",
+          "ordering",
+          "benefit_disregard",
+          "duty"
+        ]
+      },
+      "normalised": "None.",
+      "checked_by": null
+    },
+    "lifecycle": {
+      "label": "When the text itself is repealed or takes effect",
+      "status": "active",
+      "definition": "What bounds the existence or force of the text itself? Includes repeal clauses and effective-date clauses, such as 'repealed, effective December 31, 2034'. This is not a period: a repeal date is not a tax year.",
+      "attributes": {
+        "kind": [
+          "repeal",
+          "effective",
+          "contingent"
+        ]
+      },
+      "normalised": "An ISO date.",
+      "checked_by": "tools/textlib.py parse_effective_date"
+    },
+    "limit": {
+      "label": "A cap or floor on a computed amount",
+      "status": "defined",
+      "definition": "What bound caps or floors a computed amount? Includes 'but not below zero', 'cannot exceed' and 'the greater of'.",
+      "attributes": {
+        "kind": [
+          "cap",
+          "floor",
+          "lesser_of",
+          "greater_of"
+        ]
+      },
+      "normalised": "A decimal string, or a reference to the competing amount.",
+      "checked_by": null
+    },
+    "term": {
+      "label": "A word or phrase being defined",
+      "status": "defined",
+      "definition": "Which word or phrase is being defined here?",
+      "attributes": {
+        "mode": [
+          "means",
+          "includes",
+          "excludes",
+          "same_as"
+        ]
+      },
+      "normalised": "None.",
+      "checked_by": null
+    },
+    "index": {
+      "label": "An outside series or factor that drives an adjustment",
+      "status": "defined",
+      "definition": "Which external series or computed factor drives an adjustment or trigger? Includes a named price index and a defined growth factor.",
+      "attributes": {
+        "kind": [
+          "price_index",
+          "spending_growth",
+          "revenue_growth",
+          "labour_statistic"
+        ]
+      },
+      "normalised": "The series name and its publisher.",
+      "checked_by": null
+    },
+    "nonoperative": {
+      "label": "Text that sets no rule for taxpayers",
+      "status": "defined",
+      "definition": "Which text sets no taxpayer-facing rule? Includes legislative declarations, appropriations and reporting duties. Numbers inside are never parameters.",
+      "attributes": {
+        "kind": [
+          "declaration",
+          "performance_statement",
+          "appropriation",
+          "reporting",
+          "administrative_authority"
+        ]
+      },
+      "normalised": "None.",
+      "checked_by": null
+    }
+  },
+  "provision_types": {
+    "rate_imposition": {
+      "requires": [
+        "period",
+        "value",
+        "base",
+        "who",
+        "effect:imposed"
+      ],
+      "optional": [
+        "exception"
+      ],
+      "example": "39-22-104(1.7)(c)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "bracket_item": {
+      "requires": [
+        "value",
+        "threshold"
+      ],
+      "optional": [
+        "base"
+      ],
+      "example": "Amendment 87, proposed 39-22-104(1.8)(a)(VI)",
+      "evidence": "statute text read",
+      "status": "active"
+    },
+    "special_rate": {
+      "requires": [
+        "base",
+        "value"
+      ],
+      "optional": [
+        "period"
+      ],
+      "example": "Amendment 87, proposed 39-22-104(1.8)(b)",
+      "evidence": "statute text read",
+      "status": "active"
+    },
+    "ordering_rule": {
+      "requires": [
+        "effect:ordering"
+      ],
+      "optional": [
+        "base"
+      ],
+      "example": "39-22-104(2)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "credit_allowance": {
+      "requires": [
+        "period",
+        "who",
+        "effect:allowed",
+        "value",
+        "base"
+      ],
+      "optional": [
+        "threshold",
+        "exception"
+      ],
+      "example": "39-22-123.5(2)(b)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "refundability": {
+      "requires": [
+        "effect:refunded"
+      ],
+      "optional": [
+        "base",
+        "value",
+        "period"
+      ],
+      "example": "39-22-123.5(4)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "apportionment": {
+      "requires": [
+        "effect:apportioned"
+      ],
+      "optional": [
+        "base",
+        "limit",
+        "who"
+      ],
+      "example": "39-22-123.5(5)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "benefit_disregard": {
+      "requires": [
+        "effect:benefit_disregard"
+      ],
+      "optional": [],
+      "example": "39-22-123.5(6)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "lifecycle_clause": {
+      "requires": [
+        "lifecycle"
+      ],
+      "optional": [],
+      "example": "39-22-123.5(2)(c)(II)",
+      "evidence": "statute text read in an unofficial, out-of-date copy",
+      "status": "active"
+    },
+    "addition": {
+      "requires": [
+        "effect:added",
+        "base"
+      ],
+      "optional": [
+        "period",
+        "who",
+        "threshold",
+        "limit",
+        "lifecycle"
+      ],
+      "example": "39-22-104(3) items",
+      "evidence": "provisional: inferred from Department of Revenue forms, statute text not read",
+      "status": "provisional"
+    },
+    "subtraction": {
+      "requires": [
+        "effect:subtracted",
+        "base"
+      ],
+      "optional": [
+        "period",
+        "who",
+        "threshold",
+        "limit"
+      ],
+      "example": "39-22-104(4) items",
+      "evidence": "provisional: inferred from Department of Revenue forms, statute text not read",
+      "status": "provisional"
+    },
+    "credit_denial": {
+      "requires": [
+        "effect:denied"
+      ],
+      "optional": [
+        "who",
+        "threshold",
+        "period"
+      ],
+      "example": "39-22-129, income over the limit",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "phase_out": {
+      "requires": [
+        "value",
+        "threshold"
+      ],
+      "optional": [
+        "limit",
+        "who"
+      ],
+      "example": "39-22-130 phase-out",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "trigger": {
+      "requires": [
+        "threshold",
+        "value"
+      ],
+      "optional": [
+        "period",
+        "index",
+        "effect"
+      ],
+      "example": "39-22-123.5(3.5)",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "temporary_rate_adjustment": {
+      "requires": [
+        "period",
+        "threshold",
+        "who",
+        "value"
+      ],
+      "optional": [
+        "exception"
+      ],
+      "example": "39-22-627",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "refund_formula": {
+      "requires": [
+        "threshold",
+        "value",
+        "base"
+      ],
+      "optional": [
+        "who"
+      ],
+      "example": "39-22-2003",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "indexing_rule": {
+      "requires": [
+        "who",
+        "base",
+        "index"
+      ],
+      "optional": [
+        "threshold",
+        "value",
+        "period"
+      ],
+      "example": "39-22-129(8)",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "definition": {
+      "requires": [
+        "term"
+      ],
+      "optional": [
+        "exception",
+        "period",
+        "base"
+      ],
+      "example": "'Eligible child'",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "delegation": {
+      "requires": [
+        "who",
+        "effect:duty"
+      ],
+      "optional": [
+        "period",
+        "index"
+      ],
+      "example": "'The executive director shall calculate the estimated adjustment factor'",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    },
+    "nonoperative": {
+      "requires": [
+        "nonoperative"
+      ],
+      "optional": [],
+      "example": "A legislative declaration",
+      "evidence": "act read by the researchers; section not ingested",
+      "status": "defined"
+    }
+  },
+  "provision_assignments": {
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a": "rate_imposition",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/b": "special_rate",
+    "/us/co/crs/39-22-104/1.7/b": "rate_imposition",
+    "/us/co/crs/39-22-104/1.7/c": "rate_imposition",
+    "/us/co/crs/39-22-104/2": "ordering_rule",
+    "/us/co/crs/39-22-123.5/4": "refundability",
+    "/us/co/crs/39-22-123.5/5": "apportionment",
+    "/us/co/crs/39-22-123.5/6": "benefit_disregard",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/I": "bracket_item",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/II": "bracket_item",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/III": "bracket_item",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/IV": "bracket_item",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/V": "bracket_item",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/VI": "bracket_item",
+    "/us/co/crs/39-22-123.5/2/a/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2/b": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2/c/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2/d/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.5/a/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.5/b": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.5/d/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.5/e/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.7/a": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.7/b/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2.7/c/I": "credit_allowance",
+    "/us/co/crs/39-22-123.5/2/a/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2/c/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2/d/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2.5/a/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2.5/d/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2.5/e/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2.7/b/II": "lifecycle_clause",
+    "/us/co/crs/39-22-123.5/2.7/c/II": "lifecycle_clause"
+  },
+  "parameter_record": {
+    "required_fields": [
+      "id",
+      "description",
+      "unit",
+      "shape",
+      "keys",
+      "resolution",
+      "values"
+    ],
+    "unit": [
+      "rate",
+      "usd",
+      "year",
+      "count",
+      "bool",
+      "none"
+    ],
+    "shape": [
+      "scalar",
+      "marginal_rate",
+      "single_amount",
+      "phase_out",
+      "switch",
+      "list",
+      "rule"
+    ],
+    "resolution": {
+      "statute_fixed": "The statute states the number.",
+      "federal_reference": "The number is a federal figure the statute points to.",
+      "certified_revenue": "The number depends on state revenue certified after the fiscal year.",
+      "forecast_trigger": "The number depends on a revenue forecast made before the tax year.",
+      "index_applied": "The Department of Revenue applies a published index each year.",
+      "agency_certificate": "Another agency certifies the amount.",
+      "legal_event": "The number depends on an election or another legal event.",
+      "agency_practice": "The Department of Revenue's own method, not stated in statute."
+    },
+    "note": "A parameter may list more than one resolution. Where the operative number is resolved outside the statute, the statute's number and the agency's number can both be right; that is not a conflict."
+  },
+  "parameter_candidates": {
+    "about": "Parameters the research found in the wider law that this project does not record yet. No values are given here on purpose: a value needs a source in a stored copy before it is recorded.",
+    "items": {
+      "co.income_tax.temporary_reduction.tiers": {
+        "shape": "single_amount",
+        "unit": "rate",
+        "keys": [
+          "state_excess_revenue"
+        ],
+        "resolution": [
+          "certified_revenue"
+        ],
+        "open_issue": "39-22-627 as amended is not ingested"
+      },
+      "co.amt.rate": {
+        "shape": "scalar",
+        "unit": "rate",
+        "keys": [
+          "tax_year"
+        ],
+        "resolution": [
+          "statute_fixed"
+        ],
+        "open_issue": "Copies of 39-22-105 disagree on the rate; the section was not read"
+      },
+      "co.eitc.trigger_points": {
+        "shape": "single_amount",
+        "unit": "rate",
+        "keys": [
+          "adjustment_factor",
+          "tax_year"
+        ],
+        "resolution": [
+          "forecast_trigger"
+        ],
+        "open_issue": "The amending act is not ingested"
+      },
+      "co.revenue.adjustment_factor": {
+        "shape": "scalar",
+        "unit": "rate",
+        "keys": [
+          "fiscal_year"
+        ],
+        "resolution": [
+          "forecast_trigger"
+        ],
+        "open_issue": "No yearly figure was retrieved"
+      },
+      "co.ctc.amount": {
+        "shape": "single_amount",
+        "unit": "usd",
+        "keys": [
+          "tax_year",
+          "filing_status",
+          "federal_agi"
+        ],
+        "resolution": [
+          "statute_fixed",
+          "index_applied"
+        ],
+        "open_issue": "39-22-129 is not ingested"
+      },
+      "co.ctc.child_age_limit": {
+        "shape": "scalar",
+        "unit": "year",
+        "keys": [
+          "tax_year"
+        ],
+        "resolution": [
+          "statute_fixed"
+        ],
+        "open_issue": "39-22-129 is not ingested"
+      },
+      "co.fatc.amount": {
+        "shape": "scalar",
+        "unit": "usd",
+        "keys": [
+          "tax_year",
+          "child_age"
+        ],
+        "resolution": [
+          "statute_fixed",
+          "index_applied",
+          "forecast_trigger"
+        ],
+        "open_issue": "39-22-130 is not ingested"
+      },
+      "co.fatc.phase_out": {
+        "shape": "phase_out",
+        "unit": "rate",
+        "keys": [
+          "filing_status"
+        ],
+        "resolution": [
+          "statute_fixed",
+          "forecast_trigger"
+        ],
+        "open_issue": "39-22-130 is not ingested"
+      },
+      "co.cdcc.match_rate": {
+        "shape": "scalar",
+        "unit": "rate",
+        "keys": [
+          "tax_year"
+        ],
+        "resolution": [
+          "statute_fixed"
+        ],
+        "open_issue": "The section number rests partly on a search summary"
+      },
+      "co.tabor.sales_tax_refund.amount": {
+        "shape": "single_amount",
+        "unit": "usd",
+        "keys": [
+          "tax_year",
+          "filing_status",
+          "modified_agi"
+        ],
+        "resolution": [
+          "certified_revenue"
+        ],
+        "open_issue": "Certification figures were not retrieved"
+      },
+      "co.subtractions.pension.cap": {
+        "shape": "single_amount",
+        "unit": "usd",
+        "keys": [
+          "age"
+        ],
+        "resolution": [
+          "statute_fixed"
+        ],
+        "open_issue": "Agency source only; 39-22-104(4) was not read"
+      },
+      "co.apportionment.ratio": {
+        "shape": "rule",
+        "unit": "rate",
+        "keys": [],
+        "resolution": [
+          "statute_fixed"
+        ],
+        "open_issue": "39-22-110 was not read"
+      },
+      "co.inflation.index": {
+        "shape": "rule",
+        "unit": "none",
+        "keys": [],
+        "resolution": [
+          "index_applied"
+        ],
+        "open_issue": "None"
+      }
+    }
+  }
+}

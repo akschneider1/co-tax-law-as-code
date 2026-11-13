@@ -1,0 +1,78 @@
+{
+  "provision": "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/VI",
+  "model": "gemini-3.5-flash",
+  "langextract": "1.7.2",
+  "passes": 1,
+  "with_context": true,
+  "run": 1,
+  "extractions": [
+    {
+      "extraction_class": "base",
+      "extraction_text": "FEDERAL TAXABLE INCOME",
+      "attributes": null,
+      "start": 4,
+      "end": 26,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "THREE AND SEVENTY ONE-HUNDREDTHS PERCENT",
+      "attributes": {
+        "decimal": "0.037"
+      },
+      "start": 76,
+      "end": 116,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "FOUR AND TWENTY ONE-HUNDREDTHS PERCENT",
+      "attributes": {
+        "decimal": "0.042"
+      },
+      "start": 185,
+      "end": 223,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "FOUR AND FORTY ONE-HUNDREDTHS PERCENT",
+      "attributes": {
+        "decimal": "0.044"
+      },
+      "start": 340,
+      "end": 377,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "SEVEN AND FORTY ONE-HUNDREDTHS PERCENT",
+      "attributes": {
+        "decimal": "0.074"
+      },
+      "start": 495,
+      "end": 533,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "SEVEN AND NINETY ONE-HUNDREDTHS PERCENT",
+      "attributes": {
+        "decimal": "0.079"
+      },
+      "start": 659,
+      "end": 698,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "value",
+      "extraction_text": "EIGHT AND FORTY ONE-HUNDREDTHS PERCENT",
+      "attributes": {
+        "decimal": "0.084"
+      },
+      "start": 818,
+      "end": 856,
+      "alignment_status": "match_exact"
+    }
+  ]
+}

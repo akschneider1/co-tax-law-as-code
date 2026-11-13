@@ -10,9 +10,10 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 | Tests | Working. 23 cases, and 4,024 checks against the Department of Revenue's printed tax tables. |
 | Stored sources (`sources/`, `tools/snapshot_source.py`) | Working. Nine documents; every agency quote is checked against one. |
 | Amendment 87 text (`text/co-2026-amendment-87.xml`) | Proposed (1.8) ingested and marked. The rest of the measure is not. |
-| Grounding build (`tools/build_web.py`) | Working. 51 hand-marked spans located verbatim and re-parsed. Imports `textlib.py`. |
+| Grounding build (`tools/build_web.py`) | Working. 66 reference spans located verbatim and re-parsed. Imports `textlib.py`. |
 | Viewer (`web/index.html`, USWDS 3.14.0) | Working. Checked in a browser: both parameters, every year, no script errors. |
-| LangExtract script (`tools/extract_langextract.py`) | Run against Gemini 3.5 Flash for 22 of 31 provisions (free-tier quota). 72% precision, 76% recall on the 9 hand-marked provisions. Claude provider added, not yet run with a key. |
+| LangExtract script (`tools/extract_langextract.py`) | Run against Gemini 3.5 Flash on the nine core provisions under the dictionary's instructions. Eight of nine complete; bracket thresholds still unmarked. Claude provider added, not yet run with a key. |
+| Data dictionary (`dictionary/dictionary.json`, `tools/dictionary.py`) | Draft 0.1.0, enforced by the validator. 8 of 12 span classes and 9 of 20 provision types in use. 19 of 33 provisions marked. |
 | Live demo (`demo/server.py`, `.replit`) | Working locally with the stand-in and Gemini. Not yet tried on Replit. |
 | Scoring (`tools/evaluate.py`) | Working. Tried on altered copies of the hand marks. No real candidates yet. |
 | Current official statute text | Not ingested. The 2026 files are on `olls.info`, which was not allowed. |
@@ -192,6 +193,15 @@ Implemented on 11 November 2026, after the proposals were accepted:
 Numbered items this also closed: 1 (context is sent; the with and without comparison awaits a real model), 3, 4, 7, 8, 11, and "add effective-date ranges" in part.
 
 Blocked: item 6 and item 10, ingesting the current official text. The host that serves it was not allowed.
+
+### Next for the data dictionary
+
+1. Give the model a bracket example. Gemini marked no thresholds in the 2027 bracket list under instructions that ask for them; the two example provisions contain none.
+2. Mark the 14 provisions that have a type and no marks: the (2.5) and (2.7) credit variants, the first five bracket items, apportionment and the benefit disregard.
+3. Read the sections behind the provisional types (39-22-104(3) and (4), 39-22-110) and confirm or revise them.
+4. Ingest the amended 39-22-123.5 and 39-22-627, which need the `trigger`, `delegation` and `temporary_rate_adjustment` types and the `index` class.
+5. Record inclusive and exclusive edges on thresholds, and deltas and replacements on values. The dictionary names them; nothing parses them yet.
+6. Have a person decide who may change the dictionary and whether a change needs a second reviewer.
 
 ### Suggested order from here
 

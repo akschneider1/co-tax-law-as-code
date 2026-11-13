@@ -53,6 +53,7 @@ sys.path.insert(0, str(ROOT))
 import engine.co_rules  # noqa: E402,F401  (registers the rules build_web expects)
 from engine.core import Parameters  # noqa: E402
 from tools import build_web, evaluate  # noqa: E402
+from tools import dictionary as data_dictionary  # noqa: E402
 from tools.textlib import attach_cross_refs, index, load_sections  # noqa: E402
 
 PORT = int(os.environ.get("PORT", "5000"))
@@ -131,7 +132,7 @@ def corpus():
     examples = set(config["example_provisions"])
     texts = {pid: p["text"] for pid, p in by_id.items() if p["text"]}
     cite = {p["id"]: s["citation"] + p["label"] for s in sections for p in s["provisions"]}
-    classes = json.loads(evaluate.REFERENCE.read_text(encoding="utf-8"))["classes"]
+    classes = data_dictionary.legend(data_dictionary.load())
     targets = [pid for pid in sorted(texts) if pid not in examples]
     return {
         "targets": targets, "texts": texts, "cite": cite, "classes": classes,
@@ -142,6 +143,20 @@ def corpus():
 
 
 CORPUS = corpus()
+DICTIONARY = data_dictionary.load()
+PARENTS = {p["id"]: p["parent"] for s in load_sections() for p in s["provisions"]}
+
+
+def dictionary_gaps(groups, targets):
+    """For each provision in the run: its type, and the required span classes the run did not mark.
+
+    Only the class is checked, not its kind, because a model run records no kinds.
+    The example provisions' stored marks count, since a lead-in can supply a class.
+    """
+    marks = {g["provision"]: g["spans"] for g in groups + CORPUS["examples"]}
+    return {pid: {"type": DICTIONARY["provision_assignments"].get(pid, "unassigned"),
+                  "missing": data_dictionary.missing_requirements(DICTIONARY, pid, marks, PARENTS, check_kinds=False)}
+            for pid in targets}
 
 YEARS = range(2022, 2028)
 PARAMETERS = [("co.eitc.match_rate", "Earned income credit, as a share of the federal credit"),
@@ -340,9 +355,12 @@ def run_job(job):
             runs_located.append(evaluate.locate(groups, CORPUS["texts"], set(), []))
             # The provisions shown to the model as examples carry their stored marks, so the
             # years they cover are not left blank.
-            job.emit("run_done", run=run, values=year_values(groups + CORPUS["examples"]),
+            gaps = dictionary_gaps(groups, job.targets)
+            job.emit("run_done", run=run, values=year_values(groups + CORPUS["examples"]), gaps=gaps,
                      summary={"returned": totals["returned"], "kept": totals["kept"],
-                              "not_verbatim": totals["returned"] - totals["kept"], "failed": totals["failed"]})
+                              "not_verbatim": totals["returned"] - totals["kept"], "failed": totals["failed"],
+                              "provisions": len(gaps),
+                              "complete": sum(1 for g in gaps.values() if not g["missing"])})
 
         stability = None
         if len(runs_located) > 1:

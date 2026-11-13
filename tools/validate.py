@@ -7,6 +7,10 @@
               quote that names a stored copy appears in it word for word; an
               agency_published value has at least one agency quote checked so
   rules       every cited provision id and parameter id exists
+  dictionary  every ingested provision has a type; every marked span uses an
+              active class and allowed attribute values; every marked
+              provision carries the classes its type requires; every parameter
+              file records its unit, shape, keys and resolution
 
 Run with --stamp to (re)write text/manifest.json after an intended text change.
 Run with --strict to also fail on any value that rests on the statute snapshot
@@ -25,6 +29,7 @@ sys.path.insert(0, str(ROOT))
 
 import engine.co_rules  # noqa: E402,F401  (registers the rules)
 from engine.core import RULES, STATUSES, Parameters  # noqa: E402
+from tools import dictionary as data_dictionary  # noqa: E402
 from tools.snapshot_source import load_manifest, normalise, snapshot_text  # noqa: E402
 
 TEXT_DIR = ROOT / "text"
@@ -148,6 +153,28 @@ def check_sources(parameters, errors):
     return rows, snapshot_only
 
 
+def check_dictionary(parameters, index, errors):
+    """Enforce dictionary/dictionary.json on the reference marks and the parameter files."""
+    dictionary = data_dictionary.load()
+    parents = {}
+    for path in sorted(TEXT_DIR.glob("*.xml")):
+        root = ET.parse(str(path)).getroot()
+        for parent in [root] + list(root.iter("provision")):
+            for child in parent.findall("provision"):
+                parents[child.get("id")] = parent.get("id") if parent is not root else None
+    marks = json.loads((ROOT / "extractions" / "extractions.json").read_text(encoding="utf-8"))
+    with_text = {pid for pid, digest in index.items() if digest}
+    summary = data_dictionary.check_marks(dictionary, marks["groups"], parents, with_text, errors)
+    if marks["classes"] != data_dictionary.legend(dictionary):
+        errors.append("extractions.json: 'classes' must list the dictionary's active classes and their labels")
+    for data in parameters.by_id.values():
+        data_dictionary.check_parameter(dictionary, data, errors)
+    summary["version"] = dictionary["version"]
+    summary["active"] = len(data_dictionary.active_classes(dictionary))
+    summary["types"] = len({t for t in dictionary["provision_assignments"].values()})
+    return summary
+
+
 def check_rules(parameters, index, errors):
     for rule_id, func in sorted(RULES.items()):
         for cite in func.cites:
@@ -166,11 +193,15 @@ def main():
     conflicts = check_parameters(parameters, index, errors)
     source_rows, snapshot_only = check_sources(parameters, errors)
     check_rules(parameters, index, errors)
+    summary = check_dictionary(parameters, index, errors)
 
     print("text:       %d provisions, %d with content" % (len(index), sum(1 for h in index.values() if h)))
     print("parameters: %d files, %d dated values" % (
         len(parameters.by_id), sum(len(d["values"]) for d in parameters.by_id.values())))
     print("rules:      %d" % len(RULES))
+    print("dictionary: version %s; %d active span classes; %d provision types in use; "
+          "%d provisions marked, %d not yet marked"
+          % (summary["version"], summary["active"], summary["types"], summary["marked"], summary["unmarked"]))
 
     if conflicts:
         print("\nAcknowledged conflicts between a source and the value used (%d):" % len(conflicts))
