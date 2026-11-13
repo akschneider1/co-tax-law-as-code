@@ -357,6 +357,9 @@ def main():
                         help="which repeat run this is; each run number is cached separately, so run 2 "
                              "calls the model again and can be compared with run 1")
     parser.add_argument("--no-context", action="store_true", help="send each provision without its context")
+    parser.add_argument("--only", action="append", default=[], metavar="PROVISION_ID",
+                        help="mark only this provision; repeat to name several. Handy for trying a "
+                             "change to the instructions with one call")
     parser.add_argument("--core", action="store_true",
                         help="mark only the core provisions named in extractions/config.json")
     parser.add_argument("--replay", action="store_true", help="use cached results only; fail on a miss")
@@ -398,6 +401,8 @@ def main():
     core = set(env["config"]["core_provisions"])
     for provision_id in env["targets"]:
         if args.core and provision_id not in core:
+            continue
+        if args.only and provision_id not in args.only:
             continue
         try:
             raw, was_cached = mark_provision(

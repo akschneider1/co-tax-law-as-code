@@ -289,6 +289,28 @@ class Job:
             self.cond.notify_all()
 
 
+def explain_provider_error(exc, where):
+    """A short account of a model-service error: what happened and what to do about it.
+
+    Matches the common cases by status code or wording and falls back to a trimmed copy of
+    the service's own message, so an unfamiliar error is still shown rather than hidden.
+    """
+    text = " ".join(str(exc).split())
+    low = text.lower()
+    if re.search(r"\b429\b", text) or "resource_exhausted" in low or "quota" in low or "rate limit" in low:
+        return ("The model service's usage limit has been reached, so the run stopped. Provisions already "
+                "marked are saved. Start the run again later to continue from there. Free keys allow a fixed "
+                "number of requests a day; a key with billing turned on allows more.")
+    if re.search(r"\b(503|529)\b", text) or "unavailable" in low or "overloaded" in low:
+        return ("The model service is busy right now, so the run stopped. Provisions already marked are "
+                "saved. Wait a minute, then start the run again.")
+    if re.search(r"\b(401|403)\b", text) or "api key" in low or "authentication" in low or "permission" in low:
+        return ("The model service did not accept this server's key, so the run stopped. The person hosting "
+                "this demo needs to check that the key is current and can use this model.")
+    return ("The model service returned an error at %s, so the run stopped. Provisions already marked are "
+            "saved; start the run again to continue. The service said: %s" % (where, text[:200]))
+
+
 def run_job(job):
     try:
         error = load_engine()
@@ -319,9 +341,7 @@ def run_job(job):
                                    "the count by restarting the server. Provisions already marked are saved." % MAX_CALLS)
                     return
                 except Exception as exc:  # a provider error: quota, network, bad key
-                    failure.append("The model service returned an error at %s, so the run stopped. Provisions already "
-                                   "marked are saved; start the run again to continue. The service said: %s"
-                                   % (CORPUS["cite"][pid], " ".join(str(exc).split())[:400]))
+                    failure.append(explain_provider_error(exc, CORPUS["cite"][pid]))
                     return
                 if not cached and not dry:
                     with state_lock:

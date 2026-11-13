@@ -7,11 +7,13 @@
   "run": 1,
   "extractions": [
     {
-      "extraction_class": "base",
-      "extraction_text": "FEDERAL TAXABLE INCOME",
-      "attributes": null,
-      "start": 4,
-      "end": 26,
+      "extraction_class": "threshold",
+      "extraction_text": "ONE MILLION DOLLARS",
+      "attributes": {
+        "dollars": "1000000"
+      },
+      "start": 40,
+      "end": 59,
       "alignment_status": "match_exact"
     },
     {
@@ -25,6 +27,16 @@
       "alignment_status": "match_exact"
     },
     {
+      "extraction_class": "threshold",
+      "extraction_text": "TWENTY FIVE THOUSAND DOLLARS",
+      "attributes": {
+        "dollars": "25000"
+      },
+      "start": 151,
+      "end": 179,
+      "alignment_status": "match_exact"
+    },
+    {
       "extraction_class": "value",
       "extraction_text": "FOUR AND TWENTY ONE-HUNDREDTHS PERCENT",
       "attributes": {
@@ -32,6 +44,16 @@
       },
       "start": 185,
       "end": 223,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "threshold",
+      "extraction_text": "ONE HUNDRED THOUSAND DOLLARS",
+      "attributes": {
+        "dollars": "100000"
+      },
+      "start": 306,
+      "end": 334,
       "alignment_status": "match_exact"
     },
     {
@@ -45,6 +67,16 @@
       "alignment_status": "match_exact"
     },
     {
+      "extraction_class": "threshold",
+      "extraction_text": "FIVE HUNDRED THOUSAND DOLLARS",
+      "attributes": {
+        "dollars": "500000"
+      },
+      "start": 460,
+      "end": 489,
+      "alignment_status": "match_exact"
+    },
+    {
       "extraction_class": "value",
       "extraction_text": "SEVEN AND FORTY ONE-HUNDREDTHS PERCENT",
       "attributes": {
@@ -52,6 +84,16 @@
       },
       "start": 495,
       "end": 533,
+      "alignment_status": "match_exact"
+    },
+    {
+      "extraction_class": "threshold",
+      "extraction_text": "SEVEN HUNDRED FIFTY THOUSAND DOLLARS",
+      "attributes": {
+        "dollars": "750000"
+      },
+      "start": 617,
+      "end": 653,
       "alignment_status": "match_exact"
     },
     {

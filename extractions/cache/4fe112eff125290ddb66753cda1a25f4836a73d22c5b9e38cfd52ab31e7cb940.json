@@ -20,7 +20,7 @@
     {
       "extraction_class": "who",
       "extraction_text": "a resident individual who claims an earned income tax credit on the individual’s federal tax return",
-      "attributes": {},
+      "attributes": null,
       "start": 55,
       "end": 154,
       "alignment_status": "match_exact"
@@ -28,7 +28,7 @@
     {
       "extraction_class": "effect",
       "extraction_text": "is allowed an earned income tax credit against the taxes due under this article 22",
-      "attributes": {},
+      "attributes": null,
       "start": 155,
       "end": 237,
       "alignment_status": "match_exact"
@@ -46,7 +46,7 @@
     {
       "extraction_class": "base",
       "extraction_text": "the federal credit that the resident individual claimed on his or her federal tax return for the same tax year",
-      "attributes": {},
+      "attributes": null,
       "start": 279,
       "end": 389,
       "alignment_status": "match_exact"

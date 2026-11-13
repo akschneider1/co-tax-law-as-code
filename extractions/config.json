@@ -2,7 +2,8 @@
   "about": "Settings shared by tools/extract_langextract.py and tools/evaluate.py.",
   "example_provisions": [
     "/us/co/crs/39-22-104/1.7/b",
-    "/us/co/crs/39-22-123.5/2/a/I"
+    "/us/co/crs/39-22-123.5/2/a/I",
+    "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/II"
   ],
   "example_note": "These hand-marked provisions are shown to the model as examples. They are left out of every score, because scoring them would measure copying.",
   "core_provisions": [

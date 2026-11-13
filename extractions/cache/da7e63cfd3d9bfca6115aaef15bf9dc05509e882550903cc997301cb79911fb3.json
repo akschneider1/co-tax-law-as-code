@@ -19,12 +19,12 @@
     },
     {
       "extraction_class": "period",
-      "extraction_text": "on January 1, 2025",
+      "extraction_text": "commencing on January 1, 2025",
       "attributes": {
         "from": "2025-01-01",
         "to": "2025-12-31"
       },
-      "start": 128,
+      "start": 117,
       "end": 146,
       "alignment_status": "match_exact"
     },

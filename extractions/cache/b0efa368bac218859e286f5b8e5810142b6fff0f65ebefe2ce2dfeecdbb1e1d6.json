@@ -9,7 +9,7 @@
     {
       "extraction_class": "effect",
       "extraction_text": "Prior to the application of the rate of tax prescribed in subsection (1), (1.5), or (1.7) of this section",
-      "attributes": null,
+      "attributes": {},
       "start": 0,
       "end": 105,
       "alignment_status": "match_exact"
@@ -17,7 +17,7 @@
     {
       "extraction_class": "base",
       "extraction_text": "the federal taxable income",
-      "attributes": null,
+      "attributes": {},
       "start": 107,
       "end": 133,
       "alignment_status": "match_exact"
@@ -25,7 +25,7 @@
     {
       "extraction_class": "effect",
       "extraction_text": "shall be modified",
-      "attributes": null,
+      "attributes": {},
       "start": 134,
       "end": 151,
       "alignment_status": "match_exact"
@@ -33,7 +33,7 @@
     {
       "extraction_class": "exception",
       "extraction_text": "as provided in subsections (3) and (4) of this section",
-      "attributes": null,
+      "attributes": {},
       "start": 152,
       "end": 206,
       "alignment_status": "match_exact"

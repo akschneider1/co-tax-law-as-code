@@ -12,7 +12,7 @@ Written 11 November 2026, when the work moved from a local machine to GitHub. It
 | Amendment 87 text (`text/co-2026-amendment-87.xml`) | Proposed (1.8) ingested and marked. The rest of the measure is not. |
 | Grounding build (`tools/build_web.py`) | Working. 66 reference spans located verbatim and re-parsed. Imports `textlib.py`. |
 | Viewer (`web/index.html`, USWDS 3.14.0) | Working. Checked in a browser: both parameters, every year, no script errors. |
-| LangExtract script (`tools/extract_langextract.py`) | Run against Gemini 3.5 Flash on the nine core provisions under the dictionary's instructions. Eight of nine complete; bracket thresholds still unmarked. Claude provider added, not yet run with a key. |
+| LangExtract script (`tools/extract_langextract.py`) | Run against Gemini 3.5 Flash on six of the nine core provisions under the dictionary's instructions and a bracket example. The 2027 brackets now derive from its marks. Three provisions wait on the free-tier daily limit. Claude provider added, not yet run with a key. |
 | Data dictionary (`dictionary/dictionary.json`, `tools/dictionary.py`) | Draft 0.1.0, enforced by the validator. 8 of 12 span classes and 9 of 20 provision types in use. 19 of 33 provisions marked. |
 | Live demo (`demo/server.py`, `.replit`) | Working locally with the stand-in and Gemini. Not yet tried on Replit. |
 | Scoring (`tools/evaluate.py`) | Working. Tried on altered copies of the hand marks. No real candidates yet. |
@@ -126,7 +126,7 @@ D3. **Check provision size.** STARA found units under 100 words lack context and
 ### Accuracy
 
 E. **Treat the hand marks as a reference, not as truth.** STARA's benchmark found 135 of 181 apparent false positives were correct and missing from the attorneys' list. In `tools/evaluate.py` (item 3), a candidate span the hand marks lack goes to an adjudication list with three outcomes: model wrong, hand marks wrong, both defensible. Report precision before and after adjudication.
-F. **Keep the two example provisions out of the score.** They are shown to the model, so scoring them measures copying.
+F. **Keep the example provisions out of the score.** They are shown to the model, so scoring them measures copying.
 G. **Measure run-to-run stability.** Run each provision three times and report the share of spans that appear in all three. Hsu's target for repeat-run agreement is above 0.95.
 H. **Tag each provision with the structural tasks it needs**: defined term, cross-reference, lead-in clause, amendment. Report accuracy by tag, so a failure points to missing context of a named kind.
 I. **Say in the prompt how to treat provisions limited to past tax years.** Most of our provisions are. Many of the 44 reasoning errors in STARA's benchmark came from a prompt that did not say whether provisions with "historical effect only" count.
@@ -196,7 +196,7 @@ Blocked: item 6 and item 10, ingesting the current official text. The host that 
 
 ### Next for the data dictionary
 
-1. Give the model a bracket example. Gemini marked no thresholds in the 2027 bracket list under instructions that ask for them; the two example provisions contain none.
+1. ~~Give the model a bracket example.~~ Done: a bracket list (Amendment 87 (1.8)(a)(II)) is now one of three worked examples, and Gemini marked all five thresholds in the 2027 list. Shown on one provision in one run. Finish the other three core provisions when the daily limit resets, and repeat the run to see whether it holds.
 2. Mark the 14 provisions that have a type and no marks: the (2.5) and (2.7) credit variants, the first five bracket items, apportionment and the benefit disregard.
 3. Read the sections behind the provisional types (39-22-104(3) and (4), 39-22-110) and confirm or revise them.
 4. Ingest the amended 39-22-123.5 and 39-22-627, which need the `trigger`, `delegation` and `temporary_rate_adjustment` types and the `index` class.

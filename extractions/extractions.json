@@ -193,6 +193,17 @@
       "spans": [
         {"class": "lifecycle", "text": "repealed, effective December 31, 2034", "normalized": "2034-12-31", "attrs": {"kind": "repeal"}}
       ]
+    },
+    {
+      "provision": "/us/co/measure/2026/amendment-87/39-22-104/1.8/a/II",
+      "parameter": null,
+      "note": "Worked example for the model: a bracket list. Each dollar edge is a threshold, not part of a base, and each distinct amount and rate is marked once, at its first appearance. It is not tied to a parameter: the full schedule is derived from the last item, (1.8)(a)(VI).",
+      "spans": [
+        {"class": "threshold", "text": "TWENTY FIVE THOUSAND DOLLARS", "normalized": "25000"},
+        {"class": "threshold", "text": "ONE HUNDRED THOUSAND DOLLARS", "normalized": "100000"},
+        {"class": "value", "text": "THREE AND SEVENTY ONE-HUNDREDTHS PERCENT", "normalized": "0.037"},
+        {"class": "value", "text": "FOUR AND TWENTY ONE-HUNDREDTHS PERCENT", "normalized": "0.042"}
+      ]
     }
   ]
 }

@@ -264,7 +264,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
             h("th", { scope: "col" }, "Used by this project"), h("th", { scope: "col" }, "PolicyEngine"))),
           body)));
     });
-    $("values-foot").textContent = "Run " + job.shown + ". Unreadable spans are left out. Two provisions are shown to the model as worked examples; for years they cover, their saved spans are used. " +
+    $("values-foot").textContent = "Run " + job.shown + ". Unreadable spans are left out. The model is shown " + C.examples + " provisions as worked examples; for years they cover, their saved spans are used. " +
       (reached ? "PolicyEngine's values were read from its public repository during this run. It keeps a value until it records a new one, so later years may be carried forward." : "PolicyEngine's values could not be loaded, so that column is empty. The rest of the table is unaffected.");
   }
 
